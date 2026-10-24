@@ -1,0 +1,8 @@
+require('dotenv').config();
+
+module.exports = {
+  name: process.env.APP_NAME || 'Bubbly',
+  env: process.env.NODE_ENV || 'development',
+  port: Number(process.env.PORT) || 3000,
+  apiVersion: 'v1',
+};

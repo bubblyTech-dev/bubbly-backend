@@ -1,0 +1,68 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# environment and secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets/
+credentials*.json
+service-account*.json
+
+# runtime: logs, uploads, temp
+storage/logs/*
+storage/uploads/*
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.pid
+*.pid.lock
+tmp/
+temp/
+.cache/
+
+# database dumps and local data
+*.sql.gz
+*.dump
+*.bak
+*.backup
+*.sqlite
+*.sqlite3
+backups/
+
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+._*
+
+# editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# test / coverage / build output
+coverage/
+.nyc_output/
+dist/
+build/
+*.tsbuildinfo
+
+# npm
+.npm/
+*.tgz
+.eslintcache
