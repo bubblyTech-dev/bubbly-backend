@@ -40,6 +40,8 @@ backend/
 ```
 
 ## Which folder is versioned?
+`app/Helpers/audit.js` writes audit rows (`Audit.log` inside the same transaction as the change) and `app/Helpers/pagination.js` reads `page` and `perPage`. `app/Services/V1/Admin/AdminUserService.js` manages staff (Users & Access) and `AuditLogService.js` reads the audit log.
+
 `app/Helpers/files.js` is the one place for file work; `app/Providers/Storage/` holds the disk drivers (`local` now, `s3` later). `app/Resources/Resource.js` is the base class for API output.
 
 Versioned (`V1/...`): Controllers, Services, Requests, Resources, routes.

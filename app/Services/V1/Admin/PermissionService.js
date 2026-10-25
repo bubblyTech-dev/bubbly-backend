@@ -14,4 +14,17 @@ const keysFor = async (admin) => {
   return rows.map((p) => p.permissionKey);
 };
 
-module.exports = { keysFor };
+// every permission, grouped by module in checklist order: [{ module, permissions: [rows] }]
+const listGrouped = async () => {
+  const rows = await AdminPermission.findAll({ order: [['sortOrder', 'ASC'], ['id', 'ASC']] });
+  const groups = new Map();
+
+  for (const row of rows) {
+    if (!groups.has(row.module)) groups.set(row.module, []);
+    groups.get(row.module).push(row);
+  }
+
+  return [...groups.entries()].map(([module, permissions]) => ({ module, permissions }));
+};
+
+module.exports = { keysFor, listGrouped };

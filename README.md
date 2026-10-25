@@ -170,6 +170,15 @@ Base URL: `http://localhost:3000/api`
 | GET | `/v1/admin/auth/me` | Logged-in admin | Working |
 | POST | `/v1/admin/auth/change-password` | Change own password | Working |
 | PATCH | `/v1/admin/profile` | Update own name, phone and photo | Working |
+| GET, POST | `/v1/admin/users` | List (search, status, page) and add staff | Working |
+| GET, PATCH, DELETE | `/v1/admin/users/:uuid` | One staff member, edit, remove | Working |
+| PATCH | `/v1/admin/users/:uuid/status` | Activate or deactivate | Working |
+| POST | `/v1/admin/users/:uuid/reset-password` | Set a new password for staff | Working |
+| PUT | `/v1/admin/users/:uuid/permissions` | Replace a staff member's permissions | Working |
+| GET, DELETE | `/v1/admin/users/:uuid/sessions` (and `/:sessionUuid`) | List or end sessions | Working |
+| GET | `/v1/admin/users/:uuid/login-history` | Logins of a staff member | Working |
+| GET | `/v1/admin/permissions` | Permission checklist grouped by module | Working |
+| GET | `/v1/admin/audit-logs` | Audit log (search, action, entityType, from, to, page) | Working |
 | GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |

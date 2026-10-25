@@ -73,6 +73,15 @@ AdminUserResource.paginate({ rows, count, page, perPage })      // { data, meta:
 ```
 Use `this.when(condition, value)` for optional fields and `Files.url(type, name)` inside `toArray()` to turn a stored file name into a full link.
 
+## Users & Access (staff) and the audit log
+- Manages **staff only** (`type` 2). Master accounts are never listed or changed there; they change their own details under Account Settings.
+- Permissions are checked per route with `requirePermission('users_access.view')` and friends (see `config/permissions.js`).
+- **Nobody can change their own status, permissions or password, or delete themselves, through this module.**
+- **Escalation guard:** a non-master can only grant permissions they hold themselves. Permissions the staff member already has and the actor does not hold stay untouched; asking for one the actor lacks answers 422 on `permissions`.
+- Every change runs in a transaction together with its audit row: `Audit.log({ admin, ip, userAgent }, 'admin_user.created', { entityType, entityUuid, description, before, after }, { transaction })`. Never put passwords, hashes or tokens in `before` or `after`; use `Audit.pick(model, [allowed fields])`.
+- `audit_logs` is append-only, has no foreign keys, and rows written by the master (`actor_is_master = 1`) are hidden from every other admin. It has one column more than the first design: `description` (a short human summary).
+- Lists use `paginationParams(req.validated)` (default 15, max 100) and `Resource.paginate(...)`, which answers `{ data, meta: { page, perPage, total, lastPage } }`.
+
 ## Files (uploads)
 - **Rules live in `config/files.js`**: one entry per type (`adminProfile`, ...) with folder, allowed extensions, max size, max files, `private` or `public`, and link lifetime. The Admin app reads them from `GET /api/v1/admin/files/rules?type=...`.
 - **The database stores only the file name**, for example `20261025-143012-a1b2c3.png` (date, time, random part, extension). The folder always comes from the type.
