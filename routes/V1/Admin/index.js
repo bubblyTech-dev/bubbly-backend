@@ -16,6 +16,7 @@ router.use('/profile', require('./profile'));
 router.use('/users', require('./users'));
 router.use('/permissions', require('./permissions'));
 router.use('/audit-logs', require('./auditLogs'));
+router.use('/settings', require('./settings'));
 router.use(require('./ping')); // TEMP demo
 // add one file per feature below, e.g. router.use('/clients', require('./client'));
 

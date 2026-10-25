@@ -186,6 +186,8 @@ Base URL: `http://localhost:3000/api`
 | POST | `/v1/admin/plans/:uuid/publish`, `/archive`, `/duplicate` | Plan lifecycle | Working |
 | GET / PATCH | `/v1/admin/modules`, `/v1/admin/modules/:uuid` | List and edit modules | Working |
 | GET | `/v1/common/plans` | Published plans for the pricing page (public) | Working |
+| GET | `/v1/admin/settings` | Platform settings grouped, with current values | Working |
+| PUT | `/v1/admin/settings/:group` | Save one group of settings | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
 | GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
 

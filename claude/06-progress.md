@@ -4,6 +4,7 @@ _Update this file whenever something is finished, started or decided._
 
 ## Done
 - Plans & Modules (backend): modules, plans, plan limits, plan modules; admin CRUD with publish, archive, duplicate; public published-plan list (migrations written, not yet run)
+- Platform Settings (general, billing and tax, policy, renewals, email) with audit of every change
 - Project scaffold: Express app, `index.js` entry, config, `.env.example`, `.gitignore`
 - Sequelize + `sequelize-cli` wired (`.sequelizerc`), database connection settings in `config/database.js`
 - `npm run setup` (create DB if missing, migrate, seed) plus separate migration/seeder scripts
@@ -37,6 +38,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 |---|---|
 | 2026-10-25 | Users & Access module: `AdminUserService`, `AuditLogService`, `Audit` and pagination helpers, `array` and `date` rules, `audit_logs` migration and model (extra `description` column), Admin app Users list/detail/permissions/sessions/login history and Audit Log pages |
 | 2026-10-25 | Plans & Modules: migrations 000110-000113, modules seeder, `PlanService`, `ModuleService`, `PlanUsage`, public plan list |
+| 2026-10-25 | Platform Settings: `platform_settings` migration and model, `config/settings.js`, `Settings` helper with cache, `GET/PUT /admin/settings`, seeder for default keys (migration 000150, seeder 000351) |
 | 2026-10-25 | File uploads: `config/files.js`, `Files` helper, local storage driver, temp upload + commit, signed links for private files, `profile_image` on `admin_users` (migrations reset and re-run), Resource base class, `PATCH /admin/profile` |
 | 2026-10-25 | Removed the "file loaded" console logs, the autoload helper and the placeholder middleware logs; startup now prints only the database connection and Server ready |
 | 2026-10-25 | Migrations and `database/helpers.js` reformatted to expanded multi-line code (rule 6 in conventions) |

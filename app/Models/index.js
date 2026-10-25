@@ -5,6 +5,7 @@ const AdminSession = require('./AdminSession');
 const AdminPasswordReset = require('./AdminPasswordReset');
 const AdminLoginHistory = require('./AdminLoginHistory');
 const AuditLog = require('./AuditLog');
+const PlatformSetting = require('./PlatformSetting');
 
 // relationships (the database columns are plain indexed foreign keys; these are for loading related rows)
 AdminUser.hasMany(AdminSession, { foreignKey: 'adminUserId', as: 'sessions' });
@@ -54,4 +55,5 @@ module.exports = {
   AdminPasswordReset,
   AdminLoginHistory,
   AuditLog,
+  PlatformSetting,
 };
