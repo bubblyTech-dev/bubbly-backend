@@ -180,6 +180,12 @@ Base URL: `http://localhost:3000/api`
 | GET | `/v1/admin/permissions` | Permission checklist grouped by module | Working |
 | GET | `/v1/admin/audit-logs` | Audit log (search, action, entityType, from, to, page) | Working |
 | GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
+| GET | `/v1/admin/announcements`, `/:uuid` | List and read announcements | Working |
+| POST | `/v1/admin/announcements` | Create a draft announcement | Working |
+| PATCH | `/v1/admin/announcements/:uuid` | Edit (Published: end time only) | Working |
+| POST | `/v1/admin/announcements/:uuid/publish`, `/unpublish` | Publish or take back to draft | Working |
+| DELETE | `/v1/admin/announcements/:uuid` | Soft delete | Working |
+| GET | `/v1/common/announcements/active` | What schools should show now (public) | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
 | GET | `/v1/admin/plans`, `/v1/admin/plans/options`, `/v1/admin/plans/:uuid` | List, form options, one plan | Working |
 | POST / PATCH / DELETE | `/v1/admin/plans`, `/v1/admin/plans/:uuid` | Create, edit (price locked once published), delete a draft | Working |

@@ -8,6 +8,7 @@ router.use(groups.public);
 router.use(require('./ping')); // TEMP demo
 router.use('/plans', require('./plans')); // published plans for the pricing page
 router.use('/inquiries', require('./inquiries'));
+router.use('/announcements', require('./announcements'));
 // add one file per feature below, e.g. router.use('/plans', require('./plan'));
 
 module.exports = router;

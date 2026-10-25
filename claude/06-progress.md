@@ -6,6 +6,7 @@ _Update this file whenever something is finished, started or decided._
 - Plans & Modules (backend): modules, plans, plan limits, plan modules; admin CRUD with publish, archive, duplicate; public published-plan list (migrations written, not yet run)
 - Platform Settings (general, billing and tax, policy, renewals, email) with audit of every change
 - Project scaffold: Express app, `index.js` entry, config, `.env.example`, `.gitignore`
+- Announcements (backend + Admin app): written, waiting for migrations 20261025000190 and 191
 - Sequelize + `sequelize-cli` wired (`.sequelizerc`), database connection settings in `config/database.js`
 - `npm run setup` (create DB if missing, migrate, seed) plus separate migration/seeder scripts
 - Versioned folder layout (`V1` with Admin / User / Common) for controllers, services, requests, resources, routes
@@ -43,6 +44,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 | 2026-10-25 | Platform Settings: `platform_settings` migration and model, `config/settings.js`, `Settings` helper with cache, `GET/PUT /admin/settings`, seeder for default keys (migration 000150, seeder 000351) |
 | 2026-10-25 | Schools (tenants) module added: `clients`, `client_notes`, `client_status_history`, admin schools API, logo upload type `clientLogo` |
 | 2026-10-25 | Support Inquiries module: `inquiries` and `inquiry_notes` tables (migrations 170, 171, not run yet), public form endpoint with rate limit and honeypot, admin list/status/assign/notes/counts/delete with audit entries |
+| 2026-10-25 | Announcements module: `announcements` and `announcement_targets` migrations (190, 191), admin API with publish / unpublish and derived status, public active list, `datetime` rule |
 | 2026-10-25 | File uploads: `config/files.js`, `Files` helper, local storage driver, temp upload + commit, signed links for private files, `profile_image` on `admin_users` (migrations reset and re-run), Resource base class, `PATCH /admin/profile` |
 | 2026-10-25 | Removed the "file loaded" console logs, the autoload helper and the placeholder middleware logs; startup now prints only the database connection and Server ready |
 | 2026-10-25 | Migrations and `database/helpers.js` reformatted to expanded multi-line code (rule 6 in conventions) |

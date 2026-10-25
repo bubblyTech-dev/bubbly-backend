@@ -20,6 +20,7 @@ router.use('/settings', require('./settings'));
 router.use('/schools', require('./schools'));
 router.use('/inquiries', require('./inquiries'));
 router.use(require('./ping')); // TEMP demo
+router.use('/announcements', require('./announcements'));
 // add one file per feature below, e.g. router.use('/clients', require('./client'));
 
 module.exports = router;
