@@ -82,6 +82,13 @@ Use `this.when(condition, value)` for optional fields and `Files.url(type, name)
 - **Storage driver:** `STORAGE_DRIVER=local` (this server's disk). An `s3` driver (R2 or S3) can be added in `app/Providers/Storage/` later; names in the database stay the same, so switching means copying the files and changing the setting.
 - Uploads use the `multer` package (kept on a patched version).
 
+## Plans and modules
+- **Modules** (`modules` table, model `AppModule`) are the features a school can use. Seeded by `database/seeders/20261025000301-modules.js` (safe to re-run, never overwrites edited names). A **core** module is part of every plan and cannot be made inactive; the server adds core modules to every plan.
+- **Plans** (`plans`, `plan_limits`, `plan_modules`): money is stored in **paise**. Status `1: Draft, 2: Published, 3: Archived`. Limit keys live in `config/plans.js` (a limit with no value is unlimited).
+- **Lifecycle:** Draft (everything editable) -> Published (price, interval, tax and slug are locked; name, description, sort, featured, limits and modules can still change, but limits and modules can only shrink while no school uses the plan) -> Archived (read only). To change the price of a published plan, **duplicate** it: the copy is a new draft with `version + 1`.
+- Only a draft can be deleted (soft delete), and only when nobody uses it. `PlanUsage.count(plan)` returns 0 until subscriptions exist; change only that function then.
+- `GET /api/v1/common/plans` is the public list (published plans only, no internal fields).
+
 ## Request classes: clearing a value
 Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an empty value is saved as `null` instead of being ignored.
 

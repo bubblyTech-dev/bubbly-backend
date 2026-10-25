@@ -28,7 +28,24 @@ AdminPermission.belongsToMany(AdminUser, {
   as: 'adminUsers',
 });
 
+// Plans and modules
+const AppModule = require('./AppModule');
+const Plan = require('./Plan');
+const PlanLimit = require('./PlanLimit');
+const PlanModule = require('./PlanModule');
+
+Plan.hasMany(PlanLimit, { foreignKey: 'planId', as: 'limits' });
+PlanLimit.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
+Plan.hasMany(PlanModule, { foreignKey: 'planId', as: 'planModules' });
+PlanModule.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
+PlanModule.belongsTo(AppModule, { foreignKey: 'moduleId', as: 'module' });
+AppModule.hasMany(PlanModule, { foreignKey: 'moduleId', as: 'planModules' });
+
 module.exports = {
+  AppModule,
+  Plan,
+  PlanLimit,
+  PlanModule,
   AdminUser,
   AdminPermission,
   AdminUserPermission,

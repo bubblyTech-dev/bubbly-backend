@@ -172,6 +172,11 @@ Base URL: `http://localhost:3000/api`
 | PATCH | `/v1/admin/profile` | Update own name, phone and photo | Working |
 | GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
+| GET | `/v1/admin/plans`, `/v1/admin/plans/options`, `/v1/admin/plans/:uuid` | List, form options, one plan | Working |
+| POST / PATCH / DELETE | `/v1/admin/plans`, `/v1/admin/plans/:uuid` | Create, edit (price locked once published), delete a draft | Working |
+| POST | `/v1/admin/plans/:uuid/publish`, `/archive`, `/duplicate` | Plan lifecycle | Working |
+| GET / PATCH | `/v1/admin/modules`, `/v1/admin/modules/:uuid` | List and edit modules | Working |
+| GET | `/v1/common/plans` | Published plans for the pricing page (public) | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
 | GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
 
