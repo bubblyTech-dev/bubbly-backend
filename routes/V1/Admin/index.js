@@ -10,6 +10,7 @@ router.use('/auth', require('./auth'));
 router.use(groups.admin);
 router.use('/files', require('./files'));
 router.use('/profile', require('./profile'));
+router.use('/inquiries', require('./inquiries'));
 router.use(require('./ping')); // TEMP demo
 // add one file per feature below, e.g. router.use('/clients', require('./client'));
 

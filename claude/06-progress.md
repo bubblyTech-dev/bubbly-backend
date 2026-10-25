@@ -12,6 +12,7 @@ _Update this file whenever something is finished, started or decided._
 - Placeholder `AuthController` with a logging `login` in Admin and User
 - Middleware groups (`public`, `admin`, `user`) with placeholder middleware, plus temporary `ping` demo routes
 - `/api/health` endpoint
+- Support Inquiries backend (public form, admin inbox, notes, assignment, counts)
 - Root `README.md` for new developers
 - Database connection on startup (`app/Helpers/database.js`): prints `Database connected`, or a clear error and stops the server if Postgres is unreachable
 
@@ -31,6 +32,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-10-25 | Support Inquiries module: `inquiries` and `inquiry_notes` tables (migrations 170, 171, not run yet), public form endpoint with rate limit and honeypot, admin list/status/assign/notes/counts/delete with audit entries |
 | 2026-10-25 | File uploads: `config/files.js`, `Files` helper, local storage driver, temp upload + commit, signed links for private files, `profile_image` on `admin_users` (migrations reset and re-run), Resource base class, `PATCH /admin/profile` |
 | 2026-10-25 | Removed the "file loaded" console logs, the autoload helper and the placeholder middleware logs; startup now prints only the database connection and Server ready |
 | 2026-10-25 | Migrations and `database/helpers.js` reformatted to expanded multi-line code (rule 6 in conventions) |

@@ -85,6 +85,9 @@ Use `this.when(condition, value)` for optional fields and `Files.url(type, name)
 ## Request classes: clearing a value
 Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an empty value is saved as `null` instead of being ignored.
 
+## Public forms (no login)
+Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs, max })`, a hidden honeypot field (a filled field means a bot: save nothing, answer exactly like a normal success) and the same generic success message for every outcome. Example: `POST /api/v1/common/inquiries`.
+
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).
 - Commit `package-lock.json`.

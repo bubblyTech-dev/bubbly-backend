@@ -173,6 +173,11 @@ Base URL: `http://localhost:3000/api`
 | GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
+| POST | `/v1/common/inquiries` | Public contact / demo form (5 per 15 min per address, honeypot field `website`) | Working |
+| GET | `/v1/admin/inquiries`, `/inquiries/counts`, `/inquiries/assignees`, `/inquiries/:uuid` | List, totals, staff to assign, one inquiry | Working |
+| PATCH | `/v1/admin/inquiries/:uuid/status`, `/inquiries/:uuid/assign` | Change status, assign or unassign | Working |
+| GET, POST | `/v1/admin/inquiries/:uuid/notes` | Internal notes | Working |
+| DELETE | `/v1/admin/inquiries/:uuid` | Delete a Resolved or Spam inquiry (soft delete) | Working |
 | GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
 
 Unknown routes return `404` with `{ "message": "Route not found: ..." }`.

@@ -4,6 +4,8 @@ const AdminUserPermission = require('./AdminUserPermission');
 const AdminSession = require('./AdminSession');
 const AdminPasswordReset = require('./AdminPasswordReset');
 const AdminLoginHistory = require('./AdminLoginHistory');
+const Inquiry = require('./Inquiry');
+const InquiryNote = require('./InquiryNote');
 
 // relationships (the database columns are plain indexed foreign keys; these are for loading related rows)
 AdminUser.hasMany(AdminSession, { foreignKey: 'adminUserId', as: 'sessions' });
@@ -28,6 +30,12 @@ AdminPermission.belongsToMany(AdminUser, {
   as: 'adminUsers',
 });
 
+// inquiries
+Inquiry.hasMany(InquiryNote, { foreignKey: 'inquiryId', as: 'notes' });
+InquiryNote.belongsTo(Inquiry, { foreignKey: 'inquiryId', as: 'inquiry' });
+Inquiry.belongsTo(AdminUser, { foreignKey: 'assignedTo', as: 'assignee' });
+InquiryNote.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'author' });
+
 module.exports = {
   AdminUser,
   AdminPermission,
@@ -35,4 +43,6 @@ module.exports = {
   AdminSession,
   AdminPasswordReset,
   AdminLoginHistory,
+  Inquiry,
+  InquiryNote,
 };
