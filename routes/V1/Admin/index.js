@@ -9,6 +9,9 @@ router.use('/auth', require('./auth'));
 
 router.use(groups.admin);
 router.use('/files', require('./files'));
+// plans and modules
+router.use('/plans', require('./plans'));
+router.use('/modules', require('./modules'));
 router.use('/profile', require('./profile'));
 router.use('/users', require('./users'));
 router.use('/permissions', require('./permissions'));

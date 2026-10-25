@@ -6,6 +6,7 @@ const router = express.Router();
 // Common routes (V1): plans, signup, contact, login for public use, webhooks
 router.use(groups.public);
 router.use(require('./ping')); // TEMP demo
+router.use('/plans', require('./plans')); // published plans for the pricing page
 // add one file per feature below, e.g. router.use('/plans', require('./plan'));
 
 module.exports = router;
