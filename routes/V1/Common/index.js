@@ -7,6 +7,7 @@ const router = express.Router();
 router.use(groups.public);
 router.use(require('./ping')); // TEMP demo
 router.use('/plans', require('./plans')); // published plans for the pricing page
+router.use('/inquiries', require('./inquiries'));
 // add one file per feature below, e.g. router.use('/plans', require('./plan'));
 
 module.exports = router;

@@ -9,6 +9,8 @@ const PlatformSetting = require('./PlatformSetting');
 const Client = require('./Client');
 const ClientNote = require('./ClientNote');
 const ClientStatusHistory = require('./ClientStatusHistory');
+const Inquiry = require('./Inquiry');
+const InquiryNote = require('./InquiryNote');
 
 // relationships (the database columns are plain indexed foreign keys; these are for loading related rows)
 AdminUser.hasMany(AdminSession, { foreignKey: 'adminUserId', as: 'sessions' });
@@ -45,6 +47,11 @@ Plan.hasMany(PlanModule, { foreignKey: 'planId', as: 'planModules' });
 PlanModule.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
 PlanModule.belongsTo(AppModule, { foreignKey: 'moduleId', as: 'module' });
 AppModule.hasMany(PlanModule, { foreignKey: 'moduleId', as: 'planModules' });
+// inquiries
+Inquiry.hasMany(InquiryNote, { foreignKey: 'inquiryId', as: 'notes' });
+InquiryNote.belongsTo(Inquiry, { foreignKey: 'inquiryId', as: 'inquiry' });
+Inquiry.belongsTo(AdminUser, { foreignKey: 'assignedTo', as: 'assignee' });
+InquiryNote.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'author' });
 
 module.exports = {
   AppModule,
@@ -72,4 +79,6 @@ module.exports = {
   AdminLoginHistory,
   AuditLog,
   PlatformSetting,
+  Inquiry,
+  InquiryNote,
 };

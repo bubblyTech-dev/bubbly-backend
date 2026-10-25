@@ -115,6 +115,8 @@ Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an 
 - Read a value anywhere with `await Settings.get('policy.grace_days')` or `await Settings.group('billing')` (`app/Helpers/settings.js`). Saved values are cached in memory and refreshed when a group is saved.
 - API: `GET /api/v1/admin/settings` (`settings.view`) and `PUT /api/v1/admin/settings/:group` (`settings.edit`, body `{ "key": value }`, only keys of that group, validated by type and limits, saved in one transaction with one audit entry per changed key). Unchanged values are not audited.
 - Settings are not for secrets: never store API keys, tokens or passwords there (those stay in `.env`).
+## Public forms (no login)
+Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs, max })`, a hidden honeypot field (a filled field means a bot: save nothing, answer exactly like a normal success) and the same generic success message for every outcome. Example: `POST /api/v1/common/inquiries`.
 
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).

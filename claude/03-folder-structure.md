@@ -55,3 +55,6 @@ Not versioned: Rules, Middleware, Models, Jobs, Mail, Providers, Helpers, migrat
 
 ## Temporary files (delete later)
 `routes/V1/*/ping.js` and the `ping-solo` route in `routes/V1/User/index.js` are demos for the middleware order. Remove them once real routes exist.
+
+## Inquiries (support inbox)
+Public form: `routes/V1/Common/inquiries.js` -> `Controllers/V1/Common/InquiryController.js` -> `Services/V1/Common/InquiryService.js`. Admin side: `routes/V1/Admin/inquiries.js`, `Controllers/V1/Admin/InquiryController.js`, `Services/V1/Admin/InquiryService.js`, requests in `Requests/V1/{Admin,Common}/Inquiries/`, resources `InquiryResource` and `InquiryNoteResource`. Models `Inquiry` and `InquiryNote`; migrations `...000170` and `...000171`.
