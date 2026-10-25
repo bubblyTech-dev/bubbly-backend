@@ -82,6 +82,16 @@ Use `this.when(condition, value)` for optional fields and `Files.url(type, name)
 - **Storage driver:** `STORAGE_DRIVER=local` (this server's disk). An `s3` driver (R2 or S3) can be added in `app/Providers/Storage/` later; names in the database stay the same, so switching means copying the files and changing the setting.
 - Uploads use the `multer` package (kept on a patched version).
 
+## Schools (clients)
+- A school is a row in `clients`; `clients.id` is the tenant id used as `client_id` in every school-owned table. The API only ever shows its `uuid`.
+- Status: `1: Active, 2: Suspended, 3: Archived`. Allowed changes: Active to Suspended or Archived, Suspended to Active or Archived, Archived to Active. Every change needs a reason and is written to `client_status_history` and the audit log.
+- The slug is made from the name when the school is added and is unique in code (deleted schools count too). It is not editable.
+- Only an Archived school can be deleted (soft delete).
+- GST numbers are checked for the 15-character GSTIN format and stored in upper case.
+- One contact per school for now (name, email, phone on the `clients` row). More contacts would be a separate table later.
+- Staff notes live in `client_notes` and are never shown to the school.
+- The logo uses the `clientLogo` file type (`config/files.js`).
+
 ## Request classes: clearing a value
 Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an empty value is saved as `null` instead of being ignored.
 

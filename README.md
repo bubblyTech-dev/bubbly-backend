@@ -173,6 +173,12 @@ Base URL: `http://localhost:3000/api`
 | GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
+| GET, POST | `/v1/admin/schools` | List and add schools | Working |
+| GET, PATCH, DELETE | `/v1/admin/schools/:uuid` | View, edit, delete (archived only) | Working |
+| POST | `/v1/admin/schools/:uuid/status` | Suspend, reactivate or archive (reason required) | Working |
+| GET | `/v1/admin/schools/:uuid/status-history` | Status changes of a school | Working |
+| GET, POST | `/v1/admin/schools/:uuid/notes` | Internal notes | Working |
+| GET | `/v1/admin/schools/:uuid/usage` | Usage counters (zeros until school data exists) | Working |
 | GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
 
 Unknown routes return `404` with `{ "message": "Route not found: ..." }`.

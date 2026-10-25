@@ -4,6 +4,9 @@ const AdminUserPermission = require('./AdminUserPermission');
 const AdminSession = require('./AdminSession');
 const AdminPasswordReset = require('./AdminPasswordReset');
 const AdminLoginHistory = require('./AdminLoginHistory');
+const Client = require('./Client');
+const ClientNote = require('./ClientNote');
+const ClientStatusHistory = require('./ClientStatusHistory');
 
 // relationships (the database columns are plain indexed foreign keys; these are for loading related rows)
 AdminUser.hasMany(AdminSession, { foreignKey: 'adminUserId', as: 'sessions' });
@@ -28,7 +31,19 @@ AdminPermission.belongsToMany(AdminUser, {
   as: 'adminUsers',
 });
 
+// schools (clients)
+Client.hasMany(ClientNote, { foreignKey: 'clientId', as: 'notes' });
+ClientNote.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
+ClientNote.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'creator' });
+
+Client.hasMany(ClientStatusHistory, { foreignKey: 'clientId', as: 'statusHistory' });
+ClientStatusHistory.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
+ClientStatusHistory.belongsTo(AdminUser, { foreignKey: 'changedBy', as: 'changer' });
+
 module.exports = {
+  Client,
+  ClientNote,
+  ClientStatusHistory,
   AdminUser,
   AdminPermission,
   AdminUserPermission,
