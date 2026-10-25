@@ -97,6 +97,15 @@ Use `this.when(condition, value)` for optional fields and `Files.url(type, name)
 - **Lifecycle:** Draft (everything editable) -> Published (price, interval, tax and slug are locked; name, description, sort, featured, limits and modules can still change, but limits and modules can only shrink while no school uses the plan) -> Archived (read only). To change the price of a published plan, **duplicate** it: the copy is a new draft with `version + 1`.
 - Only a draft can be deleted (soft delete), and only when nobody uses it. `PlanUsage.count(plan)` returns 0 until subscriptions exist; change only that function then.
 - `GET /api/v1/common/plans` is the public list (published plans only, no internal fields).
+## Schools (clients)
+- A school is a row in `clients`; `clients.id` is the tenant id used as `client_id` in every school-owned table. The API only ever shows its `uuid`.
+- Status: `1: Active, 2: Suspended, 3: Archived`. Allowed changes: Active to Suspended or Archived, Suspended to Active or Archived, Archived to Active. Every change needs a reason and is written to `client_status_history` and the audit log.
+- The slug is made from the name when the school is added and is unique in code (deleted schools count too). It is not editable.
+- Only an Archived school can be deleted (soft delete).
+- GST numbers are checked for the 15-character GSTIN format and stored in upper case.
+- One contact per school for now (name, email, phone on the `clients` row). More contacts would be a separate table later.
+- Staff notes live in `client_notes` and are never shown to the school.
+- The logo uses the `clientLogo` file type (`config/files.js`).
 
 ## Request classes: clearing a value
 Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an empty value is saved as `null` instead of being ignored.

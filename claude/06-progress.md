@@ -19,6 +19,7 @@ _Update this file whenever something is finished, started or decided._
 - File uploads (temp + commit, signed links) and the Resource base class
 - **Users & Access** (staff management): staff list/add/edit/status/delete, reset password, permission checklist with an escalation guard, sessions and login history, audit log (`audit_logs`, migration `20261025000107`, run it before using the audit log or any change)
 - Database connection on startup (`app/Helpers/database.js`): prints `Database connected`, or a clear error and stops the server if Postgres is unreachable
+- Schools module (backend): tables `clients`, `client_notes`, `client_status_history` (migrations 130-132, to be run by the team), `SchoolService`, `/api/v1/admin/schools` endpoints (list, add, edit, status change with reason, status history, notes, usage, delete archived), `clientLogo` file type
 
 ## Next (in order)
 0. Final database design (tables, columns, relationships), reviewed with the product owner, then a DOCX
@@ -39,6 +40,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 | 2026-10-25 | Users & Access module: `AdminUserService`, `AuditLogService`, `Audit` and pagination helpers, `array` and `date` rules, `audit_logs` migration and model (extra `description` column), Admin app Users list/detail/permissions/sessions/login history and Audit Log pages |
 | 2026-10-25 | Plans & Modules: migrations 000110-000113, modules seeder, `PlanService`, `ModuleService`, `PlanUsage`, public plan list |
 | 2026-10-25 | Platform Settings: `platform_settings` migration and model, `config/settings.js`, `Settings` helper with cache, `GET/PUT /admin/settings`, seeder for default keys (migration 000150, seeder 000351) |
+| 2026-10-25 | Schools (tenants) module added: `clients`, `client_notes`, `client_status_history`, admin schools API, logo upload type `clientLogo` |
 | 2026-10-25 | File uploads: `config/files.js`, `Files` helper, local storage driver, temp upload + commit, signed links for private files, `profile_image` on `admin_users` (migrations reset and re-run), Resource base class, `PATCH /admin/profile` |
 | 2026-10-25 | Removed the "file loaded" console logs, the autoload helper and the placeholder middleware logs; startup now prints only the database connection and Server ready |
 | 2026-10-25 | Migrations and `database/helpers.js` reformatted to expanded multi-line code (rule 6 in conventions) |
