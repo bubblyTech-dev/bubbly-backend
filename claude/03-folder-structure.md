@@ -23,7 +23,7 @@ backend/
 │   ├── Providers/                            payment gateway, storage, mailer adapters
 │   └── Helpers/                              logger.js, database.js (shared Sequelize instance + startup connect), response helpers
 │
-├── config/                  app.js, database.js, auth.js, permissions.js, files.js (file types, rules, disks)
+├── config/                  app.js, database.js, auth.js, permissions.js, files.js (file types, rules, disks), settings.js (platform settings: keys, defaults, limits)
 ├── database/
 │   ├── create.js            creates the DB if missing (used by npm run setup)
 │   ├── migrations/          versioned schema changes

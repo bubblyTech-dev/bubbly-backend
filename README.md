@@ -172,6 +172,8 @@ Base URL: `http://localhost:3000/api`
 | PATCH | `/v1/admin/profile` | Update own name, phone and photo | Working |
 | GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
+| GET | `/v1/admin/settings` | Platform settings grouped, with current values | Working |
+| PUT | `/v1/admin/settings/:group` | Save one group of settings | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
 | GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
 

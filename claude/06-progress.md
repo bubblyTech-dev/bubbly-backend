@@ -3,6 +3,7 @@
 _Update this file whenever something is finished, started or decided._
 
 ## Done
+- Platform Settings (general, billing and tax, policy, renewals, email) with audit of every change
 - Project scaffold: Express app, `index.js` entry, config, `.env.example`, `.gitignore`
 - Sequelize + `sequelize-cli` wired (`.sequelizerc`), database connection settings in `config/database.js`
 - `npm run setup` (create DB if missing, migrate, seed) plus separate migration/seeder scripts
@@ -31,6 +32,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-10-25 | Platform Settings: `platform_settings` migration and model, `config/settings.js`, `Settings` helper with cache, `GET/PUT /admin/settings`, seeder for default keys (migration 000150, seeder 000351) |
 | 2026-10-25 | File uploads: `config/files.js`, `Files` helper, local storage driver, temp upload + commit, signed links for private files, `profile_image` on `admin_users` (migrations reset and re-run), Resource base class, `PATCH /admin/profile` |
 | 2026-10-25 | Removed the "file loaded" console logs, the autoload helper and the placeholder middleware logs; startup now prints only the database connection and Server ready |
 | 2026-10-25 | Migrations and `database/helpers.js` reformatted to expanded multi-line code (rule 6 in conventions) |

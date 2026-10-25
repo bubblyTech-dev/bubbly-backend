@@ -85,6 +85,12 @@ Use `this.when(condition, value)` for optional fields and `Files.url(type, name)
 ## Request classes: clearing a value
 Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an empty value is saved as `null` instead of being ignored.
 
+## Platform settings
+- Every setting is defined once in `config/settings.js` (key, group, type, default, label, limits). Saved values live in the `platform_settings` table (key, JSON value, group). A missing row means the default is used, and the seeder only adds missing keys, so it never overwrites an edited value.
+- Read a value anywhere with `await Settings.get('policy.grace_days')` or `await Settings.group('billing')` (`app/Helpers/settings.js`). Saved values are cached in memory and refreshed when a group is saved.
+- API: `GET /api/v1/admin/settings` (`settings.view`) and `PUT /api/v1/admin/settings/:group` (`settings.edit`, body `{ "key": value }`, only keys of that group, validated by type and limits, saved in one transaction with one audit entry per changed key). Unchanged values are not audited.
+- Settings are not for secrets: never store API keys, tokens or passwords there (those stay in `.env`).
+
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).
 - Commit `package-lock.json`.
