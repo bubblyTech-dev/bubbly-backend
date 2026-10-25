@@ -85,6 +85,15 @@ Use `this.when(condition, value)` for optional fields and `Files.url(type, name)
 ## Request classes: clearing a value
 Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an empty value is saved as `null` instead of being ignored.
 
+## Announcements (platform notices to schools)
+- Table `announcements` plus `announcement_targets` (school or plan the notice is aimed at). `target_id` is a plain indexed number with no foreign key, because schools and plans are separate modules.
+- **Status is worked out from the dates**: stored `1: Draft`, `2: Scheduled`, `3: Published`; `Scheduled`, `Published` and `Expired` are derived when read (`AnnouncementResource.effectiveStatus`), and the list filter uses the same rules in SQL. Nothing has to run in the background when a notice starts or ends.
+- Edit locks: Draft and Scheduled can change everything; Published can only change `endsAt`; Expired must be unpublished first. Publishing needs an end time after the start and in the future.
+- Audience: type 1 (all schools) works now. Types 2 and 3 take `targetUuids` and are resolved by `AnnouncementTargetResolver` using the `Client` and `Plan` models; until those exist the API answers 422. Requests only carry uuids.
+- Schools read `GET /api/v1/common/announcements/active` (public group, rate limited). It returns only announcements for all schools until school login exists; per-school targeting is added then.
+- Audit actions: `announcement.created / updated / published / unpublished / deleted`.
+- The request rule `datetime` accepts ISO times such as `2026-11-01T09:30`.
+
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).
 - Commit `package-lock.json`.

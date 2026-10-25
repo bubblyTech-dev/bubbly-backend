@@ -42,6 +42,8 @@ backend/
 ## Which folder is versioned?
 `app/Helpers/files.js` is the one place for file work; `app/Providers/Storage/` holds the disk drivers (`local` now, `s3` later). `app/Resources/Resource.js` is the base class for API output.
 
+Announcements: `Models/Announcement.js` + `AnnouncementTarget.js`, `Services/V1/Admin/AnnouncementService.js` (and `AnnouncementTargetResolver.js`), `Controllers/V1/{Admin,Common}/AnnouncementController.js`, `Resources/V1/Admin/AnnouncementResource.js`, `Resources/V1/Common/PublicAnnouncementResource.js`, routes `Admin/announcements.js` and `Common/announcements.js`.
+
 Versioned (`V1/...`): Controllers, Services, Requests, Resources, routes.
 Not versioned: Rules, Middleware, Models, Jobs, Mail, Providers, Helpers, migrations.
 

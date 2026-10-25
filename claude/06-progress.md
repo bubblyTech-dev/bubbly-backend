@@ -4,6 +4,7 @@ _Update this file whenever something is finished, started or decided._
 
 ## Done
 - Project scaffold: Express app, `index.js` entry, config, `.env.example`, `.gitignore`
+- Announcements (backend + Admin app): written, waiting for migrations 20261025000190 and 191
 - Sequelize + `sequelize-cli` wired (`.sequelizerc`), database connection settings in `config/database.js`
 - `npm run setup` (create DB if missing, migrate, seed) plus separate migration/seeder scripts
 - Versioned folder layout (`V1` with Admin / User / Common) for controllers, services, requests, resources, routes
@@ -31,6 +32,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-10-25 | Announcements module: `announcements` and `announcement_targets` migrations (190, 191), admin API with publish / unpublish and derived status, public active list, `datetime` rule |
 | 2026-10-25 | File uploads: `config/files.js`, `Files` helper, local storage driver, temp upload + commit, signed links for private files, `profile_image` on `admin_users` (migrations reset and re-run), Resource base class, `PATCH /admin/profile` |
 | 2026-10-25 | Removed the "file loaded" console logs, the autoload helper and the placeholder middleware logs; startup now prints only the database connection and Server ready |
 | 2026-10-25 | Migrations and `database/helpers.js` reformatted to expanded multi-line code (rule 6 in conventions) |

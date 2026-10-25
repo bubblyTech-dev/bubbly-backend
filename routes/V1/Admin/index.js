@@ -11,6 +11,7 @@ router.use(groups.admin);
 router.use('/files', require('./files'));
 router.use('/profile', require('./profile'));
 router.use(require('./ping')); // TEMP demo
+router.use('/announcements', require('./announcements'));
 // add one file per feature below, e.g. router.use('/clients', require('./client'));
 
 module.exports = router;

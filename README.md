@@ -171,6 +171,12 @@ Base URL: `http://localhost:3000/api`
 | POST | `/v1/admin/auth/change-password` | Change own password | Working |
 | PATCH | `/v1/admin/profile` | Update own name, phone and photo | Working |
 | GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
+| GET | `/v1/admin/announcements`, `/:uuid` | List and read announcements | Working |
+| POST | `/v1/admin/announcements` | Create a draft announcement | Working |
+| PATCH | `/v1/admin/announcements/:uuid` | Edit (Published: end time only) | Working |
+| POST | `/v1/admin/announcements/:uuid/publish`, `/unpublish` | Publish or take back to draft | Working |
+| DELETE | `/v1/admin/announcements/:uuid` | Soft delete | Working |
+| GET | `/v1/common/announcements/active` | What schools should show now (public) | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
 | GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
