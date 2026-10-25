@@ -56,6 +56,35 @@ Thin. Read validated input, call a service, return JSON. No business logic and n
 - Every school-owned table has `client_id`. Add an index starting with `client_id` for list queries.
 - Always paginate list endpoints.
 
+### Migration rules (decided 2026-10-25)
+1. In `admin_users` and `users`, **only `email` is required** (NOT NULL). Every other column is optional.
+2. **No `unique: true` or unique indexes in migrations.** Uniqueness (for example email) is checked in code with the `unique` validation rule.
+3. **Status columns are integers**, with the meaning in the column comment, for example `1: Active, 2: Inactive`.
+4. **Add proper indexes** (non-unique): `client_id`, `uuid`, every foreign key, `email`, `status` and common filter or date columns.
+5. Every table has an internal `id` and a public `uuid` (`UUID`, default `gen_random_uuid()`), written out in each migration; the API uses only the `uuid`.
+6. **Write migrations in expanded, readable form**: one property per line, every column on its own lines, one index per line in long lists. No one-line column definitions.
+
+## Resources (API output, like Laravel)
+Every response body is shaped by a Resource in `app/Resources/V1/<Admin|User|Common>/`. It extends `app/Resources/Resource.js` and returns only the fields that may leave the server.
+```js
+AdminUserResource.make(admin, { permissions })                  // one item
+AdminUserResource.collection(admins)                            // a list
+AdminUserResource.paginate({ rows, count, page, perPage })      // { data, meta: { page, perPage, total, lastPage } }
+```
+Use `this.when(condition, value)` for optional fields and `Files.url(type, name)` inside `toArray()` to turn a stored file name into a full link.
+
+## Files (uploads)
+- **Rules live in `config/files.js`**: one entry per type (`adminProfile`, ...) with folder, allowed extensions, max size, max files, `private` or `public`, and link lifetime. The Admin app reads them from `GET /api/v1/admin/files/rules?type=...`.
+- **The database stores only the file name**, for example `20261025-143012-a1b2c3.png` (date, time, random part, extension). The folder always comes from the type.
+- **Flow:** `POST /api/v1/admin/files/upload?type=adminProfile` (form field `file`) saves into `storage/temp/<owner>/` and returns the temp name. The form that uses it sends that name; the service calls `Files.commit(type, tempName, { owner })`, which re-checks the file and moves it into the real folder. After the database update succeeds the old file is deleted with `Files.remove`. Temp files nobody saved are deleted after 24 hours.
+- **Checks:** extension against the type, size, and the real file content (jpg, png, gif, webp, pdf signatures). Temp folders are per user, so nobody can use somebody else's upload. SVG is not allowed by default.
+- **Reading:** private types are served at `/api/files/<type>/<name>` only with a signed, expiring link (`?expires=&signature=`); anything wrong answers 404.
+- **Storage driver:** `STORAGE_DRIVER=local` (this server's disk). An `s3` driver (R2 or S3) can be added in `app/Providers/Storage/` later; names in the database stay the same, so switching means copying the files and changing the setting.
+- Uploads use the `multer` package (kept on a patched version).
+
+## Request classes: clearing a value
+Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an empty value is saved as `null` instead of being ignored.
+
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).
 - Commit `package-lock.json`.

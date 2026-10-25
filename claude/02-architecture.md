@@ -10,7 +10,7 @@
 | Validation | Our own Laravel-style Request classes, **no Zod/Joi** (planned) |
 | Auth | JWT access + refresh tokens, bcrypt/argon2 (planned) |
 | Background jobs | BullMQ + Redis (planned) |
-| Payments | One gateway, TBD, signature-verified webhooks (planned) |
+| Payments | Razorpay (INR, GST), signature-verified webhooks (planned) |
 | Files | S3-compatible storage (planned) |
 | Hosting | Hostinger VPS (planned) |
 
@@ -55,3 +55,16 @@ route -> middleware group -> (extra middleware) -> controller -> service -> mode
 - **Shared, unversioned:** Rules, Middleware, Models, Jobs, Mail, Providers, Helpers, migrations.
 - To add V2, copy only what changes. V1 must not break once clients use it.
 - The payment webhook URL is **not** versioned (the gateway stores it): `/api/webhooks/payment` (planned).
+
+## Database conventions (decided 2026-10-25)
+- **Two kinds of login tables, kept separate.** `admin_users` (platform owner and staff) has no `client_id`. `users` (principals, teachers, students, later guardians) always has `client_id`. Admin staff get permissions directly (`admin_permissions`, `admin_user_permissions`); the master admin (`admin_users.type` = 1) always has every permission and the code never checks the table for them. School users use `roles` and `permissions`.
+- **Every table has two keys.** `id` (internal auto-increment, used for joins and foreign keys) and `uuid` (public identifier). The API, routes and the Admin and School apps use **only the uuid**. A shared backend helper resolves a reference to the internal row so controllers and services never deal with the difference. Numeric ids are never exposed in URLs.
+- **Money** is stored as whole numbers in paise plus a currency code (INR). Timestamps are UTC; each school has a timezone.
+- **Soft delete** (`deleted_at`) for people and records. The audit log is append-only.
+- **Plan versions:** a subscription points to a frozen plan version.
+- **Razorpay:** plans, customers, subscriptions, orders and payments keep their Razorpay ids; every webhook is verified and stored in `webhook_events`; the event id is checked in code (inside a transaction) so repeats are ignored. There are no unique constraints in migrations (see conventions).
+- **GST:** schools store state and an optional GSTIN; invoices record the tax split and use a numbered series per financial year.
+- **Policy settings** (grace days, suspension days, read-only on past-due, retention) live in platform settings, editable in the Admin app, not in code.
+- **Email** goes through Loops.so, so there is no email-templates table. The Loops transactional ids are kept in platform settings and the API key only in `.env`. Sent emails are logged in `email_logs`.
+- **School branding:** the principal chooses the school's theme and logo in the School app (`client_branding`: display name, logo file, theme preset). Minimal for now; more options later.
+- **Renewals:** each subscription has a next renewal date. `subscription_renewals` records every renewal (due date, amount, auto or manual, status, invoice) and `renewal_reminders` records reminders sent (days before). A daily background job finds upcoming and overdue renewals, and the Admin app has a Renewals screen.

@@ -21,9 +21,9 @@ backend/
 │   ├── Jobs/                                 background jobs (BullMQ, planned)
 │   ├── Mail/                                 email templates
 │   ├── Providers/                            payment gateway, storage, mailer adapters
-│   └── Helpers/                              logger.js, autoload.js, database.js (shared Sequelize instance + startup connect), response helpers
+│   └── Helpers/                              logger.js, database.js (shared Sequelize instance + startup connect), response helpers
 │
-├── config/                  app.js, database.js (read from .env)
+├── config/                  app.js, database.js, auth.js, permissions.js, files.js (file types, rules, disks)
 ├── database/
 │   ├── create.js            creates the DB if missing (used by npm run setup)
 │   ├── migrations/          versioned schema changes
@@ -35,11 +35,13 @@ backend/
 │       ├── Admin/index.js   + one route file per feature
 │       ├── User/index.js
 │       └── Common/index.js
-├── storage/                 logs, uploads (contents are git-ignored)
+├── storage/                 logs, uploads (final files), temp (waiting uploads) (contents are git-ignored)
 └── claude/                  these docs
 ```
 
 ## Which folder is versioned?
+`app/Helpers/files.js` is the one place for file work; `app/Providers/Storage/` holds the disk drivers (`local` now, `s3` later). `app/Resources/Resource.js` is the base class for API output.
+
 Versioned (`V1/...`): Controllers, Services, Requests, Resources, routes.
 Not versioned: Rules, Middleware, Models, Jobs, Mail, Providers, Helpers, migrations.
 
@@ -47,9 +49,6 @@ Not versioned: Rules, Middleware, Models, Jobs, Mail, Providers, Helpers, migrat
 - **Admin:** Super Admin and platform staff endpoints (`/api/v1/admin/...`).
 - **User:** principal, teacher and student endpoints (`/api/v1/user/...`), always scoped to one `client_id`.
 - **Common:** public site (plans, signup, contact), public login, webhooks, anything shared by both (`/api/v1/common/...`).
-
-## Autoload
-`app/Helpers/autoload.js` requires every `.js` file under the app folders at startup and prints each one. A broken file stops the server with a clear error, so loading problems show up immediately in `npm run dev`.
 
 ## Temporary files (delete later)
 `routes/V1/*/ping.js` and the `ping-solo` route in `routes/V1/User/index.js` are demos for the middleware order. Remove them once real routes exist.

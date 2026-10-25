@@ -69,7 +69,7 @@ npm run dev
 ```
 
 ### Verify it works
-The terminal prints each loaded file and route, then:
+The terminal prints:
 ```
 ✔ Database connected  (bubbly @ 127.0.0.1:5432, user: postgres)
 Server ready
@@ -138,7 +138,7 @@ Laravel-style, flat under `app/`. Folder names are **case-sensitive** (the serve
 │   ├── Middleware/           # authenticate, resolveClient, groups.js, ...
 │   ├── Models/               # Sequelize models
 │   ├── Jobs/  Mail/  Providers/
-│   └── Helpers/              # logger, autoload, database
+│   └── Helpers/              # logger, database
 ├── config/                   # app.js, database.js
 ├── database/                 # create.js, migrations/, seeders/
 ├── routes/
@@ -165,8 +165,14 @@ Base URL: `http://localhost:3000/api`
 | Method | Path | Description | Status |
 |---|---|---|---|
 | GET | `/health` | Health check | Working |
-| POST | `/v1/admin/auth/login` | Super Admin login | Placeholder (logs only) |
 | POST | `/v1/user/auth/login` | Principal / teacher / student login | Placeholder (logs only) |
+| POST | `/v1/admin/auth/login`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | Admin sign-in flow | Working |
+| GET | `/v1/admin/auth/me` | Logged-in admin | Working |
+| POST | `/v1/admin/auth/change-password` | Change own password | Working |
+| PATCH | `/v1/admin/profile` | Update own name, phone and photo | Working |
+| GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
+| POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
+| GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
 | GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
 
 Unknown routes return `404` with `{ "message": "Route not found: ..." }`.

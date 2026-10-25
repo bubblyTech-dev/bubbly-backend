@@ -3,40 +3,45 @@ require('module-alias/register');
 const config = require('@config/app');
 const logger = require('@app/Helpers/logger');
 
-logger.title(`${config.name} API  |  env: ${config.env}`);
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 
-// load and log every file under app/
-require('@app/Helpers/autoload')();
-
+const auth = require('@config/auth');
+const Files = require('@app/Helpers/files');
 const { connect: connectDatabase } = require('@app/Helpers/database');
+const { notFound, errorHandler } = require('@app/Middleware/errorHandler');
 
 const app = express();
+if (auth.trustProxy) app.set('trust proxy', 1); // behind Nginx on the server, so req.ip is the real visitor
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin: auth.corsOrigins, // only our own apps, never "*" (cookies are sent, so credentials must be allowed)
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 600,
+  }),
+);
+app.use(express.json({ limit: '1mb' }));
 
-logger.title('Loading routes');
 app.use('/api', require('@routes'));
 
-app.use((req, res) => {
-  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
-});
-
-app.use((err, req, res, next) => {
-  logger.error(err.stack || err.message);
-  res.status(err.status || 500).json({ message: err.message || 'Server error' });
-});
+app.use(notFound);
+app.use(errorHandler);
 
 const start = async () => {
   await connectDatabase();
 
+  // uploads nobody saved are deleted after a day
+  Files.cleanTemp().catch(() => {});
+  setInterval(() => Files.cleanTemp().catch(() => {}), 3600 * 1000).unref();
+
   app.listen(config.port, () => {
     logger.title('Server ready');
     logger.ok(`http://localhost:${config.port}/api/health`);
+    logger.dim(`  CORS allows: ${auth.corsOrigins.join(', ')}`);
   });
 };
 

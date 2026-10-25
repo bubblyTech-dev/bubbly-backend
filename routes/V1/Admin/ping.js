@@ -1,14 +1,12 @@
 const express = require('express');
-const logger = require('@app/Helpers/logger');
-const requireModule = require('@app/Middleware/requireModule');
+const requirePermission = require('@app/Middleware/requirePermission');
 
 const router = express.Router();
 
-// TEMPORARY demo routes to see middleware order in the terminal (delete this file later)
-// /ping       -> only the folder's group (applied in index.js)
-// /ping-extra -> the folder's group + one extra middleware
-router.get('/ping', (req, res) => res.json({ ok: true, route: 'admin/ping' }));
-router.get('/ping-extra', requireModule('fees'), (req, res) => res.json({ ok: true, route: 'admin/ping-extra' }));
-logger.ok('routes/V1/Admin/ping.js  ->  GET /api/v1/admin/ping, /api/v1/admin/ping-extra  (TEMP)');
+// TEMPORARY demo routes to check the admin middleware (delete this file later)
+// /ping            any signed-in admin (the admin group already ran authenticateAdmin)
+// /ping-permission only an admin holding dashboard.view (the master always does)
+router.get('/ping', (req, res) => res.json({ ok: true, admin: req.admin.email }));
+router.get('/ping-permission', requirePermission('dashboard.view'), (req, res) => res.json({ ok: true, permission: 'dashboard.view' }));
 
 module.exports = router;
