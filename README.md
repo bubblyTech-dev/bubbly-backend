@@ -215,6 +215,10 @@ Base URL: `http://localhost:3000/api`
 | GET | `/v1/admin/settings` | Platform settings grouped, with current values | Working |
 | PUT | `/v1/admin/settings/:group` | Save one group of settings | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
+| GET | `/v1/admin/schools/:uuid/principal` | The school's Principal login (name, email, password set or not) | Working |
+| POST | `/v1/admin/schools/:uuid/principal/resend-welcome`, `/reset-password` | New set-password link (shown once); reset also signs the Principal out | Working |
+| GET | `/v1/admin/notifications` | Items for the header bell (new inquiries, failed payments) with the unread count | Working |
+| POST | `/v1/admin/notifications/seen` | Mark the bell as read for the current admin | Working |
 | GET, POST | `/v1/admin/schools` | List and add schools | Working |
 | GET, PATCH, DELETE | `/v1/admin/schools/:uuid` | View, edit, delete (archived only) | Working |
 | POST | `/v1/admin/schools/:uuid/status` | Suspend, reactivate or archive (reason required) | Working |

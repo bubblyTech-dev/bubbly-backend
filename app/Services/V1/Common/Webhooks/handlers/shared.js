@@ -159,6 +159,7 @@ module.exports = {
   applySubscriptionEntity,
   markActivated,
   hasBeenActivated,
+  webhookMeta,
   audit,
   upsertPayment,
 };

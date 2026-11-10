@@ -34,12 +34,13 @@ const nextNumber = async (year, prefix, transaction) => {
 const addressOf = (client) =>
   [client.addressLine1, client.addressLine2, client.city, client.state, client.postalCode, client.country].filter(Boolean).join(', ');
 
-// returns the existing or the new invoice, or null when the payment should not get one
-const issueForPayment = async ({ subscription, payment, transaction }) => {
-  if (!payment || !(Number(payment.amountPaise) > 0)) return null;
+// returns { invoice, created }: the existing or the new invoice (invoice is null when the payment should not get one).
+// `created` is true only for the call that really made the invoice, which is when its receipt email is due.
+const issue = async ({ subscription, payment, transaction }) => {
+  if (!payment || !(Number(payment.amountPaise) > 0)) return { invoice: null, created: false };
 
   const existing = await Invoice.findOne({ where: { paymentId: payment.id }, transaction });
-  if (existing) return existing;
+  if (existing) return { invoice: existing, created: false };
 
   const client = await Client.findByPk(subscription.clientId, { transaction });
   const plan = await Plan.findByPk(subscription.planId, { transaction });
@@ -94,7 +95,10 @@ const issueForPayment = async ({ subscription, payment, transaction }) => {
     { transaction },
   );
 
-  return invoice;
+  return { invoice, created: true };
 };
 
-module.exports = { issueForPayment, nextNumber, yearOf };
+// returns the existing or the new invoice, or null when the payment should not get one
+const issueForPayment = async (args) => (await issue(args)).invoice;
+
+module.exports = { issueForPayment, issueForPaymentWithFlag: issue, nextNumber, yearOf };

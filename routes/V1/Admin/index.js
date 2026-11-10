@@ -17,7 +17,9 @@ router.use('/users', require('./users'));
 router.use('/permissions', require('./permissions'));
 router.use('/audit-logs', require('./auditLogs'));
 router.use('/settings', require('./settings'));
+router.use('/schools/:uuid/principal', require('./schoolPrincipal'));
 router.use('/schools', require('./schools'));
+router.use('/notifications', require('./notifications'));
 router.use('/subscriptions', require('./subscriptions'));
 router.use('/renewals', require('./renewals'));
 router.use('/payments', require('./offlinePayments')); // record an offline payment (matched before the billing router)
