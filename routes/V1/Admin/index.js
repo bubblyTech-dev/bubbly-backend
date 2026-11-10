@@ -19,8 +19,11 @@ router.use('/audit-logs', require('./auditLogs'));
 router.use('/settings', require('./settings'));
 router.use('/schools', require('./schools'));
 router.use('/subscriptions', require('./subscriptions'));
+router.use(require('./billing')); // webhook events, payments and invoices
 router.use('/inquiries', require('./inquiries'));
 router.use(require('./ping')); // TEMP demo
+// development helpers (the webhook replay): never available in production
+if (process.env.NODE_ENV !== 'production') router.use('/dev', require('./dev'));
 router.use('/announcements', require('./announcements'));
 // add one file per feature below, e.g. router.use('/clients', require('./client'));
 

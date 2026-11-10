@@ -5,6 +5,7 @@ _Update this file whenever something is finished, started or decided._
 ## Done
 - School foundation (backend): `users`, `user_sessions`, `user_password_resets`, `user_login_history` (migrations 000240 to 000243, written, to be run), tenant context and `defineTenantModel`, real `authenticate`, `resolveClient`, `checkSubscription`, `requireModule`, `requireRole`, school auth endpoints, `GET /user/subscription`, role permission map, `PrincipalProvisioner`
 - Plan features (backend + Admin app): a text feature list on each plan replaces the module checklist in the plan form; migration `20261025000220-create-plan-features-table.js` written, not yet run
+- Payment webhook and billing records (backend): verified idempotent `POST /api/webhooks/payment`, event handlers, payments, GST invoices, dev replay, Billing API (migration 000260 written, to be run)
 - Razorpay payment gateway layer (backend): `RazorpayService`, plan and customer sync, subscriptions (create, cancel at period end, manual sync), tables for subscriptions, payments, invoices and webhook events (migrations 000210 to 000214 written, to be run); webhook processing comes later
 - Plans & Modules (backend): modules, plans, plan limits, plan modules; admin CRUD with publish, archive, duplicate; public published-plan list (migrations written, not yet run)
 - Platform Settings (general, billing and tax, policy, renewals, email) with audit of every change
@@ -44,6 +45,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 |---|---|
 | 2026-11-10 | School foundation: school users, login and sessions, tenant context with tenant-scoped models, subscription gate, role permissions, Principal provisioning service |
 | 2026-11-10 | Plan features: `plan_features` table and model, `features` on plan create and update, in the admin and public plan responses; Admin plan form shows an Add feature popup instead of the module checklist |
+| 2026-11-10 | Payment webhook: `POST /api/webhooks/payment` (raw body, signature, idempotent ingest), handlers for subscription, payment and refund events, payment records, GST invoices with a per-year gapless counter (`invoice_counters`, migration 000260), activation hook, dev-only replay, Billing admin API (webhook events, payments, invoices) |
 | 2026-11-10 | Razorpay gateway layer: `RazorpayService`, plan sync on publish, customer and subscription creation, cancel at period end, sync, new billing settings, tables for subscriptions, payments, invoices and webhook events |
 | 2026-10-25 | Users & Access module: `AdminUserService`, `AuditLogService`, `Audit` and pagination helpers, `array` and `date` rules, `audit_logs` migration and model (extra `description` column), Admin app Users list/detail/permissions/sessions/login history and Audit Log pages |
 | 2026-10-25 | Plans & Modules: migrations 000110-000113, modules seeder, `PlanService`, `ModuleService`, `PlanUsage`, public plan list |

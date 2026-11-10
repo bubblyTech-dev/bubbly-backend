@@ -197,6 +197,12 @@ Base URL: `http://localhost:3000/api`
 | GET / POST | `/v1/admin/schools/:uuid/subscriptions` | List a school's subscriptions, create one through Razorpay (Pending until the webhook) | Working |
 | GET | `/v1/admin/subscriptions`, `/v1/admin/subscriptions/:uuid` | All subscriptions, one subscription | Working |
 | POST | `/v1/admin/subscriptions/:uuid/cancel`, `/sync` | Cancel at the end of the period, refresh from Razorpay | Working |
+| POST | `/webhooks/payment` | Razorpay webhook (raw body, signature checked, duplicates ignored). Not versioned | Working |
+| GET | `/v1/admin/webhook-events`, `/:uuid` | Stored webhook calls with their payload | Working |
+| POST | `/v1/admin/webhook-events/:uuid/reprocess` | Run a failed event again | Working |
+| GET | `/v1/admin/payments`, `/:uuid` | Payments reported by Razorpay | Working |
+| GET | `/v1/admin/invoices`, `/:uuid` | Our GST invoices | Working |
+| POST | `/v1/admin/dev/webhook-replay` | Replay a captured webhook (development only, master admin, absent in production) | Working |
 | GET / PATCH | `/v1/admin/modules`, `/v1/admin/modules/:uuid` | List and edit modules | Working |
 | GET | `/v1/common/plans` | Published plans with their `features` for the pricing page (public) | Working |
 | GET | `/v1/admin/settings` | Platform settings grouped, with current values | Working |
@@ -304,7 +310,8 @@ Detailed team docs live in [`claude/`](claude/README.md):
 - [ ] Base model with `client_id` scope; first migrations (clients, users, roles, permissions, plans, subscriptions)
 - [ ] JWT authentication for Admin and User
 - [ ] Seeders (roles, permissions, plans, first Super Admin)
-- [ ] Public signup, checkout and payment webhooks
+- [x] Payment webhook, payments and GST invoices
+- [ ] Public signup and checkout
 - [ ] School modules: students, teachers, classes, attendance, homework, timetable, leave, fees, announcements
 - [ ] Audit logs, backups, deployment
 

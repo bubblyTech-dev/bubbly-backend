@@ -3,6 +3,8 @@ const Audit = require('@app/Helpers/audit');
 const { sequelize } = require('@app/Helpers/database');
 const { findOrFail } = require('@app/Helpers/ref');
 const { Client, Plan } = require('@app/Models');
+const Settings = require('@app/Helpers/settings');
+const Tax = require('@app/Helpers/tax');
 const { PLAN_STATUS } = require('@app/Helpers/constants');
 const Razorpay = require('@app/Services/V1/Common/PaymentGateway/RazorpayService');
 
@@ -17,7 +19,8 @@ const syncPlan = async (plan, ctx) => {
   const remote = await Razorpay.createPlan({
     name: plan.name,
     description: plan.description || undefined,
-    amountPaise: plan.pricePaise,
+    // a plan that is not tax inclusive is charged price + GST, so the invoice can show GST on top of the price
+    amountPaise: Tax.chargeAmountPaise(plan, await Settings.get('billing.gst_rate_percent')),
     currency: plan.currency,
     billingInterval: plan.billingInterval,
     notes: { plan_uuid: plan.uuid, plan_version: String(plan.version) },

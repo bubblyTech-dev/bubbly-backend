@@ -26,6 +26,7 @@ const Subscription = require('./Subscription');
 const Payment = require('./Payment');
 const Invoice = require('./Invoice');
 const WebhookEvent = require('./WebhookEvent');
+const InvoiceCounter = require('./InvoiceCounter');
 
 // relationships (the database columns are plain indexed foreign keys; these are for loading related rows)
 
@@ -135,4 +136,5 @@ module.exports = {
   UserSession,
   UserPasswordReset,
   UserLoginHistory,
+  InvoiceCounter,
 };

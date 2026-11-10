@@ -24,6 +24,9 @@ app.use(
     maxAge: 600,
   }),
 );
+// The payment webhook needs the body exactly as received (its signature covers the raw bytes), so it is read as a
+// Buffer here, BEFORE express.json() would parse it. Every other route gets parsed JSON.
+app.use('/api/webhooks/payment', express.raw({ type: '*/*', limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/api', require('@routes'));
