@@ -35,16 +35,26 @@ const getCookie = (req, name) => {
 };
 
 // the refresh token only ever lives in this cookie: the browser cannot read it with JavaScript
-const cookieOptions = {
+const cookieOptionsFor = (path) => ({
   httpOnly: true,
   secure: auth.cookieSecure,
   sameSite: 'lax',
-  path: auth.refreshCookiePath,
-};
+  path,
+});
+
+const cookieOptions = cookieOptionsFor(auth.refreshCookiePath);
 
 const setRefreshCookie = (res, token) =>
   res.cookie(auth.refreshCookieName, token, { ...cookieOptions, maxAge: auth.refreshTtlDays * 86400 * 1000 });
 
 const clearRefreshCookie = (res) => res.clearCookie(auth.refreshCookieName, cookieOptions);
 
-module.exports = { clientInfo, getCookie, setRefreshCookie, clearRefreshCookie };
+// the same for school users (own cookie name and path, so the two logins never mix)
+const schoolCookieOptions = cookieOptionsFor(auth.schoolRefreshCookiePath);
+
+const setSchoolRefreshCookie = (res, token) =>
+  res.cookie(auth.schoolRefreshCookieName, token, { ...schoolCookieOptions, maxAge: auth.refreshTtlDays * 86400 * 1000 });
+
+const clearSchoolRefreshCookie = (res) => res.clearCookie(auth.schoolRefreshCookieName, schoolCookieOptions);
+
+module.exports = { clientInfo, getCookie, setRefreshCookie, clearRefreshCookie, setSchoolRefreshCookie, clearSchoolRefreshCookie };

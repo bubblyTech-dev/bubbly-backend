@@ -18,6 +18,10 @@ const Inquiry = require('./Inquiry');
 const InquiryNote = require('./InquiryNote');
 const Announcement = require('./Announcement');
 const AnnouncementTarget = require('./AnnouncementTarget');
+const User = require('./User');
+const UserSession = require('./UserSession');
+const UserPasswordReset = require('./UserPasswordReset');
+const UserLoginHistory = require('./UserLoginHistory');
 const Subscription = require('./Subscription');
 const Payment = require('./Payment');
 const Invoice = require('./Invoice');
@@ -92,6 +96,16 @@ Invoice.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscriptio
 Invoice.belongsTo(Payment, { foreignKey: 'paymentId', as: 'payment' });
 Invoice.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
 
+// school users (every one belongs to a school: Client)
+Client.hasMany(User, { foreignKey: 'clientId', as: 'users' });
+User.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
+User.hasMany(UserSession, { foreignKey: 'userId', as: 'sessions' });
+UserSession.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(UserPasswordReset, { foreignKey: 'userId', as: 'passwordResets' });
+UserPasswordReset.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(UserLoginHistory, { foreignKey: 'userId', as: 'loginHistory' });
+UserLoginHistory.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 module.exports = {
   AdminUser,
   AdminPermission,
@@ -117,4 +131,8 @@ module.exports = {
   Payment,
   Invoice,
   WebhookEvent,
+  User,
+  UserSession,
+  UserPasswordReset,
+  UserLoginHistory,
 };

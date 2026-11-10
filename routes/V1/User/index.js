@@ -12,6 +12,7 @@ router.get('/ping-solo', withGroup('user', requireModule('fees')), (req, res) =>
 
 router.use(groups.user);
 router.use(require('./ping')); // TEMP demo
+router.use('/subscription', require('./subscription'));
 // add one file per feature below, e.g. router.use('/students', require('./student'));
 
 module.exports = router;

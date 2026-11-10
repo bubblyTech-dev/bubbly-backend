@@ -20,17 +20,22 @@ module.exports = {
   accessTtlSeconds: parseSeconds(process.env.JWT_ACCESS_TTL, 900), // 15 minutes
   issuer: 'bubbly',
   adminAudience: 'bubbly-admin',
+  schoolAudience: 'bubbly-school',
 
   refreshTtlDays: Number(process.env.REFRESH_TTL_DAYS) || 30,
   refreshCookieName: 'bubbly_admin_rt',
   refreshCookiePath: '/api/v1/admin/auth',
+  schoolRefreshCookieName: 'bubbly_rt',
+  schoolRefreshCookiePath: '/api/v1/user/auth',
   cookieSecure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === 'true' : env === 'production',
 
   maxFailedLogins: 5,
   lockMinutes: 15,
   resetTtlMinutes: 60,
+  welcomeTtlDays: 7, // the first-password link sent to a new Principal
 
   adminAppUrl: process.env.ADMIN_APP_URL || 'http://localhost:5005',
+  webAppUrl: (process.env.WEB_APP_URL || 'http://localhost:3001').replace(/\/$/, ''),
   corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:5005')
     .split(',')
     .map((origin) => origin.trim())

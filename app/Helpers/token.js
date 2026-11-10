@@ -12,6 +12,29 @@ const signAdminAccess = ({ adminUuid, sessionUuid }) =>
     expiresIn: auth.accessTtlSeconds,
   });
 
+// the same for school users (Principal, Teacher, Student); a different audience, so an admin token never works here
+const signUserAccess = ({ userUuid, sessionUuid }) =>
+  jwt.sign({ typ: 'user', sid: sessionUuid }, auth.accessSecret, {
+    algorithm: 'HS256',
+    subject: userUuid,
+    issuer: auth.issuer,
+    audience: auth.schoolAudience,
+    expiresIn: auth.accessTtlSeconds,
+  });
+
+const verifyUserAccess = (token) => {
+  try {
+    const payload = jwt.verify(token, auth.accessSecret, {
+      algorithms: ['HS256'],
+      issuer: auth.issuer,
+      audience: auth.schoolAudience,
+    });
+    return payload.typ === 'user' && payload.sub && payload.sid ? payload : null;
+  } catch {
+    return null;
+  }
+};
+
 // returns the payload, or null when the token is missing, expired or not ours
 const verifyAdminAccess = (token) => {
   try {
@@ -34,4 +57,4 @@ const newOpaqueToken = () => {
   return { token, hash: hashToken(token) };
 };
 
-module.exports = { signAdminAccess, verifyAdminAccess, hashToken, newOpaqueToken };
+module.exports = { signAdminAccess, verifyAdminAccess, signUserAccess, verifyUserAccess, hashToken, newOpaqueToken };

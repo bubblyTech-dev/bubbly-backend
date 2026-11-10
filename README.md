@@ -165,7 +165,10 @@ Base URL: `http://localhost:3000/api`
 | Method | Path | Description | Status |
 |---|---|---|---|
 | GET | `/health` | Health check | Working |
-| POST | `/v1/user/auth/login` | Principal / teacher / student login | Placeholder (logs only) |
+| POST | `/v1/user/auth/login`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | School sign-in flow (Principal, Teacher, Student) | Working once migrations 240-243 are run |
+| GET | `/v1/user/auth/me` | Logged-in school user, school, subscription, modules, permissions | Working once migrations are run |
+| POST | `/v1/user/auth/change-password` | Change own password | Working once migrations are run |
+| GET | `/v1/user/subscription` | The school's own plan and status (Principal) | Working once migrations are run |
 | POST | `/v1/admin/auth/login`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | Admin sign-in flow | Working |
 | GET | `/v1/admin/auth/me` | Logged-in admin | Working |
 | POST | `/v1/admin/auth/change-password` | Change own password | Working |
