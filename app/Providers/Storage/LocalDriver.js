@@ -1,4 +1,5 @@
 const fs = require('fs/promises');
+const fsSync = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const config = require('@config/files');
@@ -53,4 +54,7 @@ const verify = (key, expires, signature) => {
   return expected.length === given.length && crypto.timingSafeEqual(expected, given);
 };
 
-module.exports = { store, remove, exists, url, verify, resolvePath: absolute };
+// a readable stream of a stored file (the caller pipes it to the response)
+const openReadStream = (key) => fsSync.createReadStream(absolute(key));
+
+module.exports = { store, remove, exists, url, verify, openReadStream, resolvePath: absolute };

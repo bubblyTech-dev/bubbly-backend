@@ -140,6 +140,23 @@ const ensureTempDir = (owner) => {
   return dir;
 };
 
+// Saves a file our own code generated (for example an invoice PDF) through the same checks and storage as uploads.
+// Returns the name to keep in the database.
+const putGenerated = async (type, buffer, originalName) => {
+  const rules = getRules(type);
+  const owner = 'system';
+  const name = newName(originalName);
+  if (buffer.length > rules.maxSizeMB * 1024 * 1024) throw new Error(`Generated file is larger than ${rules.maxSizeMB} MB.`);
+  await fs.writeFile(path.join(ensureTempDir(owner), name), buffer);
+  return commit(type, name, { owner });
+};
+
+// a readable stream of a stored file (null when the storage cannot stream it)
+const stream = (type, name) => {
+  if (!name || !isValidName(name) || !Storage.openReadStream) return null;
+  return Storage.openReadStream(keyFor(type, name));
+};
+
 module.exports = {
   getRules,
   publicRules,
@@ -156,4 +173,6 @@ module.exports = {
   remove,
   url,
   cleanTemp,
+  putGenerated,
+  stream,
 };

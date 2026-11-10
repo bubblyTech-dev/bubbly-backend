@@ -55,6 +55,15 @@ module.exports = {
       visibility: 'private',
       urlTtlMinutes: 360,
     },
+    // our own generated GST invoices (made by InvoicePdfService, never uploaded)
+    invoicePdf: {
+      folder: 'invoices/pdf',
+      extensions: ['pdf'],
+      maxSizeMB: 2,
+      maxFiles: 1,
+      visibility: 'private',
+      urlTtlMinutes: 60,
+    },
     clientLogo: {
       folder: 'clients/logo',
       extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'],

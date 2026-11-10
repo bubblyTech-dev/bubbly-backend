@@ -3,6 +3,7 @@
 _Update this file whenever something is finished, started or decided._
 
 ## Done
+- Invoice PDF download and payment refunds (backend + Admin app): `GET /admin/invoices/:uuid/pdf`, `POST /admin/payments/:uuid/refund`, refund reasons from Settings; no migrations
 - School foundation (backend): `users`, `user_sessions`, `user_password_resets`, `user_login_history` (migrations 000240 to 000243, written, to be run), tenant context and `defineTenantModel`, real `authenticate`, `resolveClient`, `checkSubscription`, `requireModule`, `requireRole`, school auth endpoints, `GET /user/subscription`, role permission map, `PrincipalProvisioner`
 - Plan features (backend + Admin app): a text feature list on each plan replaces the module checklist in the plan form; migration `20261025000220-create-plan-features-table.js` written, not yet run
 - Payment webhook and billing records (backend): verified idempotent `POST /api/webhooks/payment`, event handlers, payments, GST invoices, dev replay, Billing API (migration 000260 written, to be run)

@@ -203,6 +203,9 @@ Base URL: `http://localhost:3000/api`
 | POST | `/v1/admin/webhook-events/:uuid/reprocess` | Run a failed event again | Working |
 | GET | `/v1/admin/payments`, `/:uuid` | Payments reported by Razorpay | Working |
 | GET | `/v1/admin/invoices`, `/:uuid` | Our GST invoices | Working |
+| GET | `/v1/admin/invoices/:uuid/pdf` | Download an invoice as a PDF | Working |
+| GET | `/v1/admin/payments/refund-options` | Refund reasons from Settings | Working |
+| POST | `/v1/admin/payments/:uuid/refund` | Refund a payment (full or partial, optionally cancel the subscription at period end) | Working |
 | POST | `/v1/admin/dev/webhook-replay` | Replay a captured webhook (development only, master admin, absent in production) | Working |
 | GET / PATCH | `/v1/admin/modules`, `/v1/admin/modules/:uuid` | List and edit modules | Working |
 | GET | `/v1/common/plans` | Published plans with their `features` for the pricing page (public) | Working |
