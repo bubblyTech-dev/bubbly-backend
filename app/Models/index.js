@@ -92,6 +92,7 @@ Subscription.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'creator' });
 Subscription.hasMany(Payment, { foreignKey: 'subscriptionId', as: 'payments' });
 Payment.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
 Payment.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
+Payment.belongsTo(AdminUser, { foreignKey: 'recordedBy', as: 'recorder' });
 Subscription.hasMany(Invoice, { foreignKey: 'subscriptionId', as: 'invoices' });
 Invoice.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
 Invoice.belongsTo(Payment, { foreignKey: 'paymentId', as: 'payment' });

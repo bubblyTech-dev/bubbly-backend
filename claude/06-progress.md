@@ -43,6 +43,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | Offline payments: record a payment received outside Razorpay with an admin-chosen valid-until date, offline subscriptions (`source` columns, migration 000320), shared GST invoice numbering, change expiry date, hourly `SubscriptionExpiryJob` (Past due, Suspended, Expired from the grace settings) |
 | 2026-11-10 | School foundation: school users, login and sessions, tenant context with tenant-scoped models, subscription gate, role permissions, Principal provisioning service |
 | 2026-11-10 | Plan features: `plan_features` table and model, `features` on plan create and update, in the admin and public plan responses; Admin plan form shows an Add feature popup instead of the module checklist |
 | 2026-11-10 | Payment webhook: `POST /api/webhooks/payment` (raw body, signature, idempotent ingest), handlers for subscription, payment and refund events, payment records, GST invoices with a per-year gapless counter (`invoice_counters`, migration 000260), activation hook, dev-only replay, Billing admin API (webhook events, payments, invoices) |

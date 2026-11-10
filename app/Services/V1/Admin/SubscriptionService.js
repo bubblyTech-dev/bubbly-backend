@@ -6,7 +6,7 @@ const Audit = require('@app/Helpers/audit');
 const { paginationParams } = require('@app/Helpers/pagination');
 const { findOrFail, isUuid } = require('@app/Helpers/ref');
 const { sequelize } = require('@app/Helpers/database');
-const { CLIENT_STATUS, PLAN_STATUS, SUBSCRIPTION_STATUS, YES, NO } = require('@app/Helpers/constants');
+const { BILLING_SOURCE, CLIENT_STATUS, PLAN_STATUS, SUBSCRIPTION_STATUS, YES, NO } = require('@app/Helpers/constants');
 const { Client, Plan, Subscription } = require('@app/Models');
 const SubscriptionResource = require('@app/Resources/V1/Admin/SubscriptionResource');
 const Settings = require('@app/Helpers/settings');
@@ -206,6 +206,28 @@ const createForSchool = async (clientUuid, { planUuid, startAt }, ctx) => {
 // A subscription that never started has no period to wait for and Razorpay refuses "end of period" for it, so it is
 // cancelled at once. We never mark a subscription Cancelled on our side while Razorpay may still charge it: if Razorpay
 // refuses and the subscription is still live there, the error is shown instead.
+// An offline subscription has no Razorpay side: it is set to end when its paid period ends (the expiry job then
+// cancels it), so the school keeps what it paid for.
+const cancelOffline = async (subscription, before, ctx) => {
+  await sequelize.transaction(async (transaction) => {
+    await subscription.update({ cancelAtCycleEnd: YES, cancelRequestedAt: new Date() }, { transaction });
+
+    await Audit.log(
+      ctx,
+      'subscription.cancel_requested',
+      {
+        entityType: 'subscription',
+        entityUuid: subscription.uuid,
+        clientId: subscription.clientId,
+        description: `Set the offline subscription of ${subscription.client.name} to end after the current period`,
+        before,
+        after: snapshot(subscription),
+      },
+      { transaction },
+    );
+  });
+};
+
 const cancel = async (uuid, ctx) => {
   const subscription = await loadOne(uuid);
   const before = snapshot(subscription);
@@ -215,6 +237,11 @@ const cancel = async (uuid, ctx) => {
   }
   if (Number(subscription.cancelAtCycleEnd) === YES) {
     throw AppError.validation({ subscription: ['This subscription is already set to end after the current period.'] });
+  }
+
+  if (Number(subscription.source) === BILLING_SOURCE.OFFLINE) {
+    await cancelOffline(subscription, before, ctx);
+    return SubscriptionResource.make(await loadOne(uuid));
   }
 
   const neverStarted = Number(subscription.status) === S.PENDING && Number(subscription.paidCount) === 0;
@@ -266,6 +293,10 @@ const cancel = async (uuid, ctx) => {
 const sync = async (uuid, ctx) => {
   const subscription = await loadOne(uuid);
   const before = snapshot(subscription);
+
+  if (Number(subscription.source) === BILLING_SOURCE.OFFLINE) {
+    throw AppError.validation({ subscription: ['An offline subscription is not on Razorpay, so there is nothing to refresh.'] });
+  }
 
   const remote = await Razorpay.fetchSubscription(subscription.razorpaySubscriptionId);
 

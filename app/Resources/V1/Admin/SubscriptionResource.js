@@ -8,6 +8,7 @@ class SubscriptionResource extends Resource {
     return {
       uuid: subscription.uuid,
       status: Number(subscription.status),
+      source: Number(subscription.source) || 1, // 1: Razorpay, 2: Offline
       client: this.when(subscription.client, () => ({ uuid: subscription.client.uuid, name: subscription.client.name })),
       plan: this.when(subscription.plan, () => ({
         uuid: subscription.plan.uuid,
