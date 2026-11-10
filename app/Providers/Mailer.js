@@ -14,7 +14,10 @@ const sendTransactional = async ({ to, transactionalId, data = {} }) => {
 
   if (!apiKey || !transactionalId) {
     logger.warn(`[mail not sent: Loops is not configured] to ${to}`);
-    Object.entries(data).forEach(([key, value]) => logger.dim(`    ${key}: ${value}`));
+    // the values (reset links, tokens) are only printed while developing, never on a production server
+    if (process.env.NODE_ENV !== 'production') {
+      Object.entries(data).forEach(([key, value]) => logger.dim(`    ${key}: ${value}`));
+    }
     return { sent: false };
   }
 

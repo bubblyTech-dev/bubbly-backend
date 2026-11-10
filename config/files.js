@@ -47,6 +47,14 @@ module.exports = {
       visibility: 'private', // private files are only reachable through a signed link
       urlTtlMinutes: 360, // how long a signed link works
     },
+    userProfile: {
+      folder: 'users/profile',
+      extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+      maxSizeMB: 5,
+      maxFiles: 1,
+      visibility: 'private',
+      urlTtlMinutes: 360,
+    },
     clientLogo: {
       folder: 'clients/logo',
       extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'],

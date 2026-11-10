@@ -19,12 +19,20 @@ All schools share one database. A **client = one preschool** (the customer who b
 
 - Every school-owned table has a **`client_id`** column. Use this exact name everywhere; never `tenant_id`.
 - Platform-level tables (plans, platform admin users, platform audit logs) have **no** `client_id`.
-- `client_id` comes **only from the logged-in user's token**, never from the request body, query or URL.
-- A shared base model adds a default scope (`WHERE client_id = <current>`) and a create hook that fills `client_id` (planned: `BaseModel`).
-- Raw queries and `unscoped()` are banned outside one small reviewed helper.
+- `client_id` comes **only from the logged-in user's database row** (found through the session in the access token), never from the request body, query, headers or URL.
+- **How it is enforced (built):** `app/Helpers/context.js` holds the current school in an `AsyncLocalStorage`. The `resolveClient` middleware starts it for the whole request. School-owned models are defined with `defineTenantModel` (`app/Models/TenantModel.js`), which adds `client_id` to every find, count, bulk update, bulk destroy (and to included tenant models), fills `client_id` on create, refuses to change it, and **throws when no school context is set**.
+- The only way around it is `context.runWithoutTenant(reason, fn)`, used for the few lookups that happen before the school is known (login by email, refresh token, reset link, "is this email taken"). Every use needs a written reason and a code review.
+- Raw queries, `sequelize.query`, `unscoped()`, `upsert`, `increment` and `decrement` are banned on school-owned models (the last four throw).
+- Subscription state, plans and the other platform tables are not tenant models; code that reads them for a school passes `req.client.id` explicitly.
 - Postgres Row-Level Security may be added later as a second safety net, through a migration.
 
 **The rule that matters most:** a user from one school must never be able to read, change, search or export another school's data, even by guessing IDs.
+
+## School login and access (built)
+- School users (`users`: Principal, Teacher, Student) log in at `/api/v1/user/auth`. The email is the login and is unique across all schools (checked in code). Access token: JWT, audience `bubbly-school`, holds only the user uuid and the session uuid; refresh token: random, hashed in `user_sessions`, httpOnly cookie `bubbly_rt` (path `/api/v1/user/auth`), rotated on every refresh. An admin token never works here and the other way round.
+- The `user` middleware group runs in this order: `authenticate` (token, live session, active user) -> `resolveClient` (school must be Active, starts the tenant context) -> `checkSubscription` (the school's subscription must be Active, or Past due inside `policy.grace_days`; otherwise 402 `SUBSCRIPTION_INACTIVE`). `requireModule('key')` then checks the plan, `requireRole(...)` and `requirePermission(...)` check the person.
+- `/user/auth/me` and `/user/auth/change-password` sit outside the group (they use `authenticate.allowPasswordChange` + `resolveClient`), so everyone can still see who they are and why access is blocked. The Principal may also open `/user/subscription` while payment is overdue.
+- Roles map to permission keys in `config/schoolPermissions.js`. A new Principal is created without a password by `PrincipalProvisioner` and sets it from an emailed welcome link (`/user/auth/reset-password`).
 
 ## Request flow
 ```

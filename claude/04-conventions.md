@@ -138,6 +138,15 @@ Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs,
 - **Billing numbers live in platform settings**, not in code: GST rate and number, invoice prefix, company name and address, SAC code, grace days, and the automatic-charge note `billing.max_auto_charge_rupees` (banks limit automatic debit, about 15,000 rupees per charge; the plan form only warns).
 - `fail_existing` for a Razorpay customer must be the string `"0"`; a number is ignored.
 
+## School users, tenant isolation and school auth
+- **School-owned models use `defineTenantModel`** (not `defineModel`). They get `client_id` automatically, are scoped on every query, and throw outside a school context. Never pass `client_id` from a request; never read it from `req.body`, `req.query` or headers. The school is `req.client` (set by `resolveClient`).
+- Code that runs before the school is known wraps the lookup in `context.runWithoutTenant('why this is needed', fn)` and then continues inside `context.run(user.clientId, ...)`. Do not use it for anything else.
+- Banned on school-owned models: raw SQL, `sequelize.query`, `unscoped()`, `upsert`, `increment`, `decrement`. Platform models (clients, plans, subscriptions, settings) are not tenant models, so filter them by `req.client.id` yourself.
+- `users.email` is unique across ALL schools (no database constraint; use `UserDirectory.emailExists`). Only `email` is required in `users`.
+- Permissions for school users live in `config/schoolPermissions.js`; `requirePermission` works for both admins and school users. Hiding a menu is never enough.
+- Test every new school endpoint for cross-school access: a guessed uuid of another school's record must answer 404.
+- The tests are `school-auth-test.mjs` (HTTP + models) and an offline check of the context and hooks; run them after migrating.
+
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).
 - Commit `package-lock.json`.
