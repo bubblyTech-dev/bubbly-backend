@@ -18,6 +18,8 @@ class SettingGroupResource extends Resource {
         min: definition.min ?? null,
         max: definition.max ?? null,
         maxLength: definition.maxLength ?? null,
+        maxItems: definition.maxItems ?? null,
+        maxItemLength: definition.maxItemLength ?? null,
       })),
     };
   }

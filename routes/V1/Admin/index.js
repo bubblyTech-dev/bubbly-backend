@@ -19,6 +19,7 @@ router.use('/audit-logs', require('./auditLogs'));
 router.use('/settings', require('./settings'));
 router.use('/schools', require('./schools'));
 router.use('/subscriptions', require('./subscriptions'));
+router.use('/renewals', require('./renewals'));
 router.use(require('./billing')); // webhook events, payments and invoices
 router.use('/inquiries', require('./inquiries'));
 router.use(require('./ping')); // TEMP demo

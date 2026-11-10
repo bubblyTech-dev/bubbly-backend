@@ -35,6 +35,34 @@ const convert = (definition, raw) => {
       return { value: text };
     }
 
+    case 'text': {
+      if (raw !== null && typeof raw !== 'string') return { error: 'This must be text.' };
+      const text = (raw || '').replace(/\r\n/g, '\n').trim();
+      if (text.length > (definition.maxLength || 2000)) return { error: `This must not be longer than ${definition.maxLength || 2000} characters.` };
+      return { value: text };
+    }
+
+    case 'stringList': {
+      const parts = Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(/\r?\n/) : null;
+      if (parts === null) return { error: 'This must be a list.' };
+
+      const seen = new Set();
+      const items = [];
+      for (const part of parts) {
+        if (typeof part !== 'string') return { error: 'Every item must be text.' };
+        const item = part.trim();
+        if (!item) continue;
+        if (item.length > (definition.maxItemLength || 60)) return { error: `Each item must not be longer than ${definition.maxItemLength || 60} characters.` };
+        const key = item.toLowerCase();
+        if (seen.has(key)) continue; // repeats are ignored
+        seen.add(key);
+        items.push(item);
+      }
+      if (items.length === 0) return { error: 'Add at least one item.' };
+      if (items.length > (definition.maxItems || 20)) return { error: `Use at most ${definition.maxItems || 20} items.` };
+      return { value: items };
+    }
+
     case 'integer': {
       const number = toInteger(raw);
       if (number === null) return { error: 'This must be a whole number.' };
