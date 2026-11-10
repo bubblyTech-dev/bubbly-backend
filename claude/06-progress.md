@@ -43,6 +43,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | Renewals: `GET /admin/renewals` and `/counts` (due soon, payment failed, in grace, suspended; days from Settings), `subscriptions.past_due_since` kept by a model hook (migration 000280). New settings keys and the `text` and `stringList` setting types (offline payment methods, refund reasons, invoice footer and terms, due-soon window, payment-failed message id, notification switches) with a Notifications group |
 | 2026-11-10 | School foundation: school users, login and sessions, tenant context with tenant-scoped models, subscription gate, role permissions, Principal provisioning service |
 | 2026-11-10 | Plan features: `plan_features` table and model, `features` on plan create and update, in the admin and public plan responses; Admin plan form shows an Add feature popup instead of the module checklist |
 | 2026-11-10 | Payment webhook: `POST /api/webhooks/payment` (raw body, signature, idempotent ingest), handlers for subscription, payment and refund events, payment records, GST invoices with a per-year gapless counter (`invoice_counters`, migration 000260), activation hook, dev-only replay, Billing admin API (webhook events, payments, invoices) |

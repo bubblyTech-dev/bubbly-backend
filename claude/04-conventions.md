@@ -115,6 +115,8 @@ Add `nullable` to a field (for example `phone: 'nullable|string|max:30'`) so an 
 - Every setting is defined once in `config/settings.js` (key, group, type, default, label, limits). Saved values live in the `platform_settings` table (key, JSON value, group). A missing row means the default is used, and the seeder only adds missing keys, so it never overwrites an edited value.
 - Read a value anywhere with `await Settings.get('policy.grace_days')` or `await Settings.group('billing')` (`app/Helpers/settings.js`). Saved values are cached in memory and refreshed when a group is saved.
 - API: `GET /api/v1/admin/settings` (`settings.view`) and `PUT /api/v1/admin/settings/:group` (`settings.edit`, body `{ "key": value }`, only keys of that group, validated by type and limits, saved in one transaction with one audit entry per changed key). Unchanged values are not audited.
+- **Types** (`type` in `config/settings.js`): `string`, `text` (long, multi-line), `integer`, `number`, `boolean`, `integerList` (numbers) and `stringList` (a list of short texts: trimmed, empty lines and repeats dropped, `maxItems` and `maxItemLength` apply, at least one item). The Settings page shows a stringList as chips and a text as a multi-line box.
+- Groups: General, Billing & Tax, Policy, Renewals, Email and Notifications. New in this round: `renewals.due_soon_days`, `billing.offline_payment_methods`, `billing.refund_reasons`, `billing.invoice_footer`, `billing.invoice_terms`, `email.loops_tx_payment_failed`, `notifications.show_failed_payments` and `notifications.show_new_inquiries`.
 - Settings are not for secrets: never store API keys, tokens or passwords there (those stay in `.env`).
 ## Public forms (no login)
 Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs, max })`, a hidden honeypot field (a filled field means a bot: save nothing, answer exactly like a normal success) and the same generic success message for every outcome. Example: `POST /api/v1/common/inquiries`.
@@ -160,3 +162,8 @@ Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs,
 
 ## Logging
 `app/Helpers/logger.js` prints readable terminal output (`ok`, `info`, `warn`, `error`). Use it instead of raw `console.log`.
+
+## Renewals
+- The Renewals page (`GET /api/v1/admin/renewals/counts` and `GET /api/v1/admin/renewals?tab=`, permission `renewals.view`) shows four lists. All days come from Settings, none are in code: **due_soon** = Active and the next charge (or the end of the period when no charge is planned) is within `renewals.due_soon_days` or already passed; **payment_failed** = Past due; **in_grace** = Past due and still inside `policy.grace_days`, counted from `subscriptions.past_due_since`; **suspended** = Suspended.
+- The lists use only the status and the dates, so they work for Razorpay subscriptions and for offline ones (no Razorpay ids) alike. `source` in a row is 1 for Razorpay and 2 for offline.
+- `subscriptions.past_due_since` is kept by a `beforeSave` hook on the `Subscription` model: set when the status becomes Past due, cleared when it changes to anything else. Webhook handlers and manual syncs therefore need no extra code. Older Past due rows are filled from `updated_at` by the migration.

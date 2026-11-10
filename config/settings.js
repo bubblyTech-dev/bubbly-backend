@@ -2,7 +2,7 @@
 // The seeder inserts missing keys from here (never overwrites a saved value), the API validates against it,
 // and the Admin app builds its forms from it.
 //
-// type: 'string' | 'integer' | 'number' | 'boolean' | 'integerList'
+// type: 'string' | 'text' (long, multi-line) | 'integer' | 'number' | 'boolean' | 'integerList' | 'stringList'
 // Values here are not secrets. Never add keys, tokens or passwords to platform settings.
 
 const groups = {
@@ -11,6 +11,7 @@ const groups = {
   policy: { label: 'Policy', sortOrder: 3 },
   renewals: { label: 'Renewals', sortOrder: 4 },
   email: { label: 'Email', sortOrder: 5 },
+  notifications: { label: 'Notifications', sortOrder: 6 },
 };
 
 const definitions = [
@@ -100,6 +101,44 @@ const definitions = [
     maxLength: 10,
   },
   {
+    key: 'billing.invoice_footer',
+    group: 'billing',
+    type: 'text',
+    default: '',
+    label: 'Invoice footer text',
+    description: 'A short line printed at the bottom of every invoice, for example a thank-you note.',
+    maxLength: 500,
+  },
+  {
+    key: 'billing.invoice_terms',
+    group: 'billing',
+    type: 'text',
+    default: '',
+    label: 'Invoice terms and notes',
+    description: 'Terms or notes printed on every invoice, such as payment terms or a refund policy.',
+    maxLength: 2000,
+  },
+  {
+    key: 'billing.offline_payment_methods',
+    group: 'billing',
+    type: 'stringList',
+    default: ['Cash', 'Bank transfer', 'Cheque', 'UPI'],
+    label: 'Offline payment methods',
+    description: 'The methods an admin can choose when recording a payment received outside Razorpay.',
+    maxItems: 20,
+    maxItemLength: 40,
+  },
+  {
+    key: 'billing.refund_reasons',
+    group: 'billing',
+    type: 'stringList',
+    default: ['Duplicate payment', 'Customer request', 'Service issue', 'Other'],
+    label: 'Refund reasons',
+    description: 'The reasons an admin can choose when refunding a payment.',
+    maxItems: 20,
+    maxItemLength: 60,
+  },
+  {
     key: 'billing.currency',
     group: 'billing',
     type: 'string',
@@ -139,6 +178,16 @@ const definitions = [
     max: 3650,
   },
   {
+    key: 'renewals.due_soon_days',
+    group: 'renewals',
+    type: 'integer',
+    default: 7,
+    label: 'Due soon window (days)',
+    description: 'A subscription counts as "Due soon" on the Renewals page when its next charge or expiry is within this many days.',
+    min: 1,
+    max: 90,
+  },
+  {
     key: 'renewals.reminder_days_before',
     group: 'renewals',
     type: 'integerList',
@@ -175,6 +224,31 @@ const definitions = [
     label: 'Loops message id: receipt',
     description: 'The id of the transactional message in Loops.',
     maxLength: 60,
+  },
+  {
+    key: 'email.loops_tx_payment_failed',
+    group: 'email',
+    type: 'string',
+    default: '',
+    label: 'Loops message id: payment failed',
+    description: 'The id of the transactional message in Loops.',
+    maxLength: 60,
+  },
+  {
+    key: 'notifications.show_failed_payments',
+    group: 'notifications',
+    type: 'boolean',
+    default: true,
+    label: 'Show failed payments in the notification bell',
+    description: 'Admins with billing access see a notification when a school payment fails.',
+  },
+  {
+    key: 'notifications.show_new_inquiries',
+    group: 'notifications',
+    type: 'boolean',
+    default: true,
+    label: 'Show new inquiries in the notification bell',
+    description: 'Admins with inquiry access see a notification when a new inquiry arrives.',
   },
 ];
 
