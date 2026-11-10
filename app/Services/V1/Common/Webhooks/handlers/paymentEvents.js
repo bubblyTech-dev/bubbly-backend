@@ -1,6 +1,7 @@
 const Razorpay = require('@app/Services/V1/Common/PaymentGateway/RazorpayService');
 const { Payment, Subscription } = require('@app/Models');
 const InvoiceIssuer = require('../InvoiceIssuer');
+const { queueReceipt, queuePaymentFailed } = require('./billingMail');
 const { S, isPaid, lockAndReload, audit, upsertPayment, findSubscription } = require('./shared');
 
 // payment.authorized, payment.captured and payment.failed.
@@ -53,7 +54,8 @@ const handlePaymentEvent = async (event, { transaction }) => {
   const payment = await upsertPayment({ entity, subscription, transaction });
 
   if (event.event === 'payment.captured' && isPaid(payment.status)) {
-    await InvoiceIssuer.issueForPayment({ subscription, payment, transaction });
+    const { invoice, created } = await InvoiceIssuer.issueForPaymentWithFlag({ subscription, payment, transaction });
+    if (created) queueReceipt({ subscription, invoice, transaction });
   }
 
   if (event.event === 'payment.failed') {
@@ -65,6 +67,7 @@ const handlePaymentEvent = async (event, { transaction }) => {
       { after: { razorpayPaymentId: entity.id, errorCode: entity.error_code || null, status: Number(subscription.status) } },
       transaction,
     );
+    await queuePaymentFailed({ subscription, payment, transaction });
   }
 
   return { outcome: 'processed', message: Number(subscription.status) === S.CANCELLED ? 'Recorded for a cancelled subscription.' : undefined };

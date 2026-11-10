@@ -85,4 +85,4 @@ const provisionPrincipal = (client, { transaction } = {}) =>
     return { user, created: true };
   });
 
-module.exports = { provisionPrincipal };
+module.exports = { provisionPrincipal, sendWelcome };

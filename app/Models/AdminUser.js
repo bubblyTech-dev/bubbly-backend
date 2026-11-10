@@ -18,6 +18,7 @@ module.exports = defineModel(
     lockedUntil: DataTypes.DATE,
     lastLoginAt: DataTypes.DATE,
     passwordChangedAt: DataTypes.DATE,
+    lastSeenNotificationsAt: DataTypes.DATE, // the notification bell counts items newer than this
     createdBy: DataTypes.BIGINT,
   },
   { paranoid: true },

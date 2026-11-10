@@ -1,5 +1,6 @@
 const InvoiceIssuer = require('../InvoiceIssuer');
 const Provisioning = require('../../Provisioning');
+const { queueReceipt, queuePaymentFailed } = require('./billingMail');
 const {
   S,
   isPaid,
@@ -46,7 +47,10 @@ const handleSubscriptionEvent = async (event, { transaction }) => {
   const paymentEntity = event.payload.payment && event.payload.payment.entity;
   if (isCharge && paymentEntity && paymentEntity.id) {
     const payment = await upsertPayment({ entity: paymentEntity, subscription, transaction });
-    if (isPaid(payment.status)) await InvoiceIssuer.issueForPayment({ subscription, payment, transaction });
+    if (isPaid(payment.status)) {
+      const { invoice, created } = await InvoiceIssuer.issueForPaymentWithFlag({ subscription, payment, transaction });
+      if (created) queueReceipt({ subscription, invoice, transaction });
+    }
   }
 
   if (!applied) return { outcome: 'processed', message: 'Older than what is already saved; the state was not changed.' };
@@ -55,6 +59,11 @@ const handleSubscriptionEvent = async (event, { transaction }) => {
   const statusChanged = Number(subscription.status) !== previousStatus;
   if (action && (isCharge || statusChanged)) {
     await audit(subscription, action, description, { before: { status: previousStatus }, after: { status: Number(subscription.status) } }, transaction);
+  }
+
+  // a renewal that failed: tell the school once (the payment.failed event may already have done so)
+  if (event.event === 'subscription.pending' && statusChanged && Number(subscription.status) === S.PAST_DUE) {
+    await queuePaymentFailed({ subscription, transaction });
   }
 
   // the first time the subscription is Active the school gets its workspace and Principal login

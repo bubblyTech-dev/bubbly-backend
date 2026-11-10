@@ -3,6 +3,7 @@
 _Update this file whenever something is finished, started or decided._
 
 ## Done
+- Principal tools (resend welcome link, reset password), notification bell (`GET /admin/notifications`, `POST /admin/notifications/seen`) and billing emails (receipt, payment failed) with the Admin app UI; migration `20261025000340-add-last-seen-notifications-to-admin-users.js` written, to be run
 - School foundation (backend): `users`, `user_sessions`, `user_password_resets`, `user_login_history` (migrations 000240 to 000243, written, to be run), tenant context and `defineTenantModel`, real `authenticate`, `resolveClient`, `checkSubscription`, `requireModule`, `requireRole`, school auth endpoints, `GET /user/subscription`, role permission map, `PrincipalProvisioner`
 - Plan features (backend + Admin app): a text feature list on each plan replaces the module checklist in the plan form; migration `20261025000220-create-plan-features-table.js` written, not yet run
 - Payment webhook and billing records (backend): verified idempotent `POST /api/webhooks/payment`, event handlers, payments, GST invoices, dev replay, Billing API (migration 000260 written, to be run)
@@ -43,6 +44,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | Principal tools, notification bell and billing emails: `PrincipalService`, `NotificationService`, `BillingMailer`, webhook mail hooks, migration 000340 |
 | 2026-11-10 | School foundation: school users, login and sessions, tenant context with tenant-scoped models, subscription gate, role permissions, Principal provisioning service |
 | 2026-11-10 | Plan features: `plan_features` table and model, `features` on plan create and update, in the admin and public plan responses; Admin plan form shows an Add feature popup instead of the module checklist |
 | 2026-11-10 | Payment webhook: `POST /api/webhooks/payment` (raw body, signature, idempotent ingest), handlers for subscription, payment and refund events, payment records, GST invoices with a per-year gapless counter (`invoice_counters`, migration 000260), activation hook, dev-only replay, Billing admin API (webhook events, payments, invoices) |
