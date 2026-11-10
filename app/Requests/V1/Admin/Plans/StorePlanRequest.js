@@ -2,6 +2,7 @@ const Request = require('@app/Requests/Request');
 
 // limits  { max_students: 100, max_teachers: null }   null means unlimited (keys are in config/plans.js)
 // modules ['<module uuid>', ...]                       core modules are always added by the server
+// features ['Unlimited attendance records', ...]       text lines for the pricing page (max 30, each 1-200 characters)
 class StorePlanRequest extends Request {
   rules() {
     return {
@@ -15,6 +16,7 @@ class StorePlanRequest extends Request {
       sortOrder: 'integer|min:0',
       limits: 'nullable',
       modules: 'nullable',
+      features: 'array',
     };
   }
 

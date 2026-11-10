@@ -17,6 +17,8 @@ module.exports = defineModel(
     sortOrder: { type: DataTypes.INTEGER, defaultValue: 0 },
     isFeatured: { type: DataTypes.SMALLINT, defaultValue: 0 }, // 1: Yes, 0: No
     version: { type: DataTypes.INTEGER, defaultValue: 1 },
+    razorpayPlanId: DataTypes.STRING(60), // the plan on Razorpay (created once, Razorpay plans cannot be edited)
+    razorpaySyncedAt: DataTypes.DATE,
     publishedAt: DataTypes.DATE,
     archivedAt: DataTypes.DATE,
     createdBy: DataTypes.BIGINT,

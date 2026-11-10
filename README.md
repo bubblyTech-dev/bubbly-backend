@@ -188,10 +188,14 @@ Base URL: `http://localhost:3000/api`
 | GET | `/v1/common/announcements/active` | What schools should show now (public) | Working |
 | POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
 | GET | `/v1/admin/plans`, `/v1/admin/plans/options`, `/v1/admin/plans/:uuid` | List, form options, one plan | Working |
-| POST / PATCH / DELETE | `/v1/admin/plans`, `/v1/admin/plans/:uuid` | Create, edit (price locked once published), delete a draft | Working |
-| POST | `/v1/admin/plans/:uuid/publish`, `/archive`, `/duplicate` | Plan lifecycle | Working |
+| POST / PATCH / DELETE | `/v1/admin/plans`, `/v1/admin/plans/:uuid` | Create, edit (price locked once published; `features` is the plan's text list), delete a draft | Working |
+| POST | `/v1/admin/plans/:uuid/publish`, `/archive`, `/duplicate` | Plan lifecycle (publish also creates the plan on Razorpay when keys are set) | Working |
+| POST | `/v1/admin/plans/:uuid/sync-gateway` | Create a published plan on Razorpay (retry or first sync) | Working |
+| GET / POST | `/v1/admin/schools/:uuid/subscriptions` | List a school's subscriptions, create one through Razorpay (Pending until the webhook) | Working |
+| GET | `/v1/admin/subscriptions`, `/v1/admin/subscriptions/:uuid` | All subscriptions, one subscription | Working |
+| POST | `/v1/admin/subscriptions/:uuid/cancel`, `/sync` | Cancel at the end of the period, refresh from Razorpay | Working |
 | GET / PATCH | `/v1/admin/modules`, `/v1/admin/modules/:uuid` | List and edit modules | Working |
-| GET | `/v1/common/plans` | Published plans for the pricing page (public) | Working |
+| GET | `/v1/common/plans` | Published plans with their `features` for the pricing page (public) | Working |
 | GET | `/v1/admin/settings` | Platform settings grouped, with current values | Working |
 | PUT | `/v1/admin/settings/:group` | Save one group of settings | Working |
 | GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |

@@ -47,6 +47,10 @@ backend/
 
 Announcements: `Models/Announcement.js` + `AnnouncementTarget.js`, `Services/V1/Admin/AnnouncementService.js` (and `AnnouncementTargetResolver.js`), `Controllers/V1/{Admin,Common}/AnnouncementController.js`, `Resources/V1/Admin/AnnouncementResource.js`, `Resources/V1/Common/PublicAnnouncementResource.js`, routes `Admin/announcements.js` and `Common/announcements.js`.
 
+Plan features: model `PlanFeature` (table `plan_features`, migration `...000220`), written by `Services/V1/Admin/PlanService.js` together with the plan.
+
+Payment gateway: `app/Services/V1/Common/PaymentGateway/RazorpayService.js` holds every Razorpay call (customers, plans, subscriptions, invoices, payments, refunds, signature checks); nothing else talks to Razorpay. `app/Services/V1/Common/Webhooks/` is reserved for the webhook handlers (built later, see its README). `config/payment.js` reads the keys from `.env`. Admin side: `Services/V1/Admin/GatewaySyncService.js` (plan and customer sync), `SubscriptionService.js`, `Controllers/V1/Admin/SubscriptionController.js`, `routes/V1/Admin/subscriptions.js` (plus two routes in `schools.js`), `Resources/V1/Admin/SubscriptionResource.js`. Models `Subscription`, `Payment`, `Invoice`, `WebhookEvent`; migrations `...000210` to `...000214`.
+
 Versioned (`V1/...`): Controllers, Services, Requests, Resources, routes.
 Not versioned: Rules, Middleware, Models, Jobs, Mail, Providers, Helpers, migrations.
 

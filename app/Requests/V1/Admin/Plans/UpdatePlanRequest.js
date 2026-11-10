@@ -1,6 +1,6 @@
 const Request = require('@app/Requests/Request');
 
-// Send only what changed. A published plan keeps its price and billing interval (see PlanService).
+// Send only what changed. `features` replaces the whole list (an empty list clears it). A published plan keeps its price and billing interval (see PlanService).
 class UpdatePlanRequest extends Request {
   rules() {
     return {
@@ -14,6 +14,7 @@ class UpdatePlanRequest extends Request {
       sortOrder: 'integer|min:0',
       limits: 'nullable',
       modules: 'nullable',
+      features: 'array',
     };
   }
 

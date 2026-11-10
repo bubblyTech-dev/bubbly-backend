@@ -3,19 +3,25 @@ const { sequelize } = require('@app/Helpers/database');
 const AppError = require('@app/Helpers/AppError');
 const Audit = require('@app/Helpers/audit');
 const { findOrFail } = require('@app/Helpers/ref');
-const { AppModule, Plan, PlanLimit, PlanModule } = require('@app/Models');
+const { AppModule, Plan, PlanFeature, PlanLimit, PlanModule } = require('@app/Models');
 const { PLAN_STATUS, MODULE_STATUS, YES, NO } = require('@app/Helpers/constants');
 const plansConfig = require('@config/plans');
 const PlanResource = require('@app/Resources/V1/Admin/PlanResource');
+const Settings = require('@app/Helpers/settings');
+const Razorpay = require('@app/Services/V1/Common/PaymentGateway/RazorpayService');
 const PlanUsage = require('./PlanUsage');
+const GatewaySyncService = require('./GatewaySyncService');
 
 // ctx is { admin, ip, userAgent } of the person making the change (used for created_by and the audit log).
 
 const LIMIT_KEYS = plansConfig.limits.map((limit) => limit.key);
+const MAX_FEATURES = 30;
+const MAX_FEATURE_LENGTH = 200;
 const LOCKED_MESSAGE = 'This plan is published, so this cannot change. Duplicate the plan to create a new version.';
 
 const fullInclude = [
   { model: PlanLimit, as: 'limits' },
+  { model: PlanFeature, as: 'features' },
   { model: PlanModule, as: 'planModules', include: [{ model: AppModule, as: 'module' }] },
 ];
 
@@ -48,6 +54,10 @@ const limitsOf = (plan) => {
   return Object.fromEntries(LIMIT_KEYS.map((key) => [key, stored.has(key) ? stored.get(key) : null]));
 };
 
+// the plan's features as text, in list order
+const featuresOf = (plan) =>
+  [...(plan.features || [])].sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id)).map((row) => row.title);
+
 const includedModules = (plan) => (plan.planModules || []).filter((row) => Number(row.included) === YES && row.module);
 
 // only safe fields go into the audit log
@@ -63,6 +73,7 @@ const snapshot = (plan) => ({
   sortOrder: plan.sortOrder,
   version: plan.version,
   limits: limitsOf(plan),
+  features: featuresOf(plan),
   modules: includedModules(plan).map((row) => row.module.moduleKey).sort(),
 });
 
@@ -83,6 +94,27 @@ const parseLimits = (input) => {
     parsed[key] = value;
   }
   return parsed;
+};
+
+// ['Line one', 'Line two'] -> trimmed, no empty lines, no repeats (any letter case), at most 30
+const parseFeatures = (input) => {
+  if (input === undefined || input === null) return null;
+  if (!Array.isArray(input) || input.some((item) => typeof item !== 'string')) {
+    throw AppError.validation({ features: ['The features are not valid.'] });
+  }
+  if (input.length > MAX_FEATURES) throw AppError.validation({ features: [`A plan can have at most ${MAX_FEATURES} features.`] });
+
+  const seen = new Set();
+  const titles = [];
+  for (const raw of input) {
+    const title = raw.trim().replace(/\s+/g, ' ');
+    if (!title) throw AppError.validation({ features: ['A feature cannot be empty.'] });
+    if (title.length > MAX_FEATURE_LENGTH) throw AppError.validation({ features: [`A feature must not be longer than ${MAX_FEATURE_LENGTH} characters.`] });
+    if (seen.has(title.toLowerCase())) continue;
+    seen.add(title.toLowerCase());
+    titles.push(title);
+  }
+  return titles;
 };
 
 // module uuids -> modules. Core modules are always part of a plan, so they are added here.
@@ -110,6 +142,30 @@ const writeLimits = async (plan, limits, transaction) => {
   }
 };
 
+// The plan ends up with exactly these features, in this order. A feature that is still in the list keeps its row
+// (and uuid); removed ones are deleted and new ones are added.
+const writeFeatures = async (plan, titles, transaction) => {
+  const rows = await PlanFeature.findAll({ where: { planId: plan.id }, transaction });
+  const free = new Map();
+  for (const row of rows) {
+    const key = String(row.title).toLowerCase();
+    if (!free.has(key)) free.set(key, row);
+    else await row.destroy({ transaction });
+  }
+
+  for (const [index, title] of titles.entries()) {
+    const key = title.toLowerCase();
+    const row = free.get(key);
+    if (row) {
+      free.delete(key);
+      await row.update({ title, sortOrder: index }, { transaction });
+    } else {
+      await PlanFeature.create({ planId: plan.id, title, sortOrder: index }, { transaction });
+    }
+  }
+  for (const row of free.values()) await row.destroy({ transaction });
+};
+
 // the plan ends up with exactly these modules
 const writeModules = async (plan, modules, transaction) => {
   const wanted = new Set(modules.map((module) => String(module.id)));
@@ -129,9 +185,11 @@ const output = async (plan) => PlanResource.make(plan, { inUse: await PlanUsage.
 
 const escapeLike = (text) => text.replace(/[\\%_]/g, '\\$&');
 
-const options = () => ({
+// maxAutoChargeRupees is the note shown in the plan form: above it automatic debit may not work (RBI limit)
+const options = async () => ({
   limits: plansConfig.limits,
   intervals: plansConfig.intervals,
+  maxAutoChargeRupees: Number(await Settings.get('billing.max_auto_charge_rupees')),
 });
 
 const list = async ({ search, status, page, perPage }) => {
@@ -170,6 +228,7 @@ const create = async (ctx, data) =>
   sequelize.transaction(async (transaction) => {
     const limits = parseLimits(data.limits);
     const modules = await resolveModules(data.modules, transaction);
+    const features = parseFeatures(data.features);
 
     const plan = await Plan.create(
       {
@@ -193,6 +252,7 @@ const create = async (ctx, data) =>
     // every configured limit gets a row, so nothing is left unclear (empty = unlimited)
     await writeLimits(plan, Object.fromEntries(LIMIT_KEYS.map((key) => [key, limits[key] ?? null])), transaction);
     await writeModules(plan, modules, transaction);
+    if (features) await writeFeatures(plan, features, transaction);
 
     const saved = await load(plan.uuid, transaction);
     await Audit.log(
@@ -205,7 +265,7 @@ const create = async (ctx, data) =>
   });
 
 // Draft: everything can change. Published: price, interval, tax and slug are locked (schools already pay for them);
-// limits and modules may grow, and may shrink only while no school uses the plan. Archived: read only.
+// features (text only) can always change; limits and modules may grow, and may shrink only while no school uses the plan. Archived: read only.
 const update = async (ctx, uuid, data) =>
   sequelize.transaction(async (transaction) => {
     const plan = await load(uuid, transaction);
@@ -217,6 +277,7 @@ const update = async (ctx, uuid, data) =>
 
     const limits = parseLimits(data.limits);
     const modules = data.modules === undefined || data.modules === null ? null : await resolveModules(data.modules, transaction);
+    const features = parseFeatures(data.features);
     const published = Number(plan.status) === PLAN_STATUS.PUBLISHED;
 
     if (published) {
@@ -259,6 +320,7 @@ const update = async (ctx, uuid, data) =>
     await plan.update(changes, { transaction });
     if (Object.keys(limits).length) await writeLimits(plan, limits, transaction);
     if (modules) await writeModules(plan, modules, transaction);
+    if (features) await writeFeatures(plan, features, transaction); // text only, so it may change on a published plan
 
     const saved = await load(uuid, transaction);
     await Audit.log(
@@ -270,17 +332,30 @@ const update = async (ctx, uuid, data) =>
     return output(saved);
   });
 
-const publish = async (ctx, uuid) =>
-  sequelize.transaction(async (transaction) => {
+// what a plan needs before it can be published
+const checkPublishable = (plan) => {
+  const problems = [];
+  if (!includedModules(plan).some((row) => Number(row.module.status) === MODULE_STATUS.ACTIVE)) problems.push('Add at least one module before publishing.');
+  if (!Number.isFinite(Number(plan.pricePaise)) || Number(plan.pricePaise) < 0) problems.push('Set a price (0 or more) before publishing.');
+  if (problems.length) throw AppError.validation({ plan: problems });
+};
+
+// Publishing also creates the plan on Razorpay when the keys are set. Razorpay is called first, so if it fails the
+// plan stays a draft and nothing is half done. Without keys the plan still publishes and stays "not synced".
+const publish = async (ctx, uuid) => {
+  const draft = await load(uuid);
+
+  if (Number(draft.status) !== PLAN_STATUS.DRAFT) throw AppError.validation({ plan: ['Only a draft plan can be published.'] });
+  checkPublishable(draft);
+
+  if (Razorpay.isConfigured()) await GatewaySyncService.syncPlan(draft, ctx);
+
+  return sequelize.transaction(async (transaction) => {
     const plan = await load(uuid, transaction);
     const before = snapshot(plan);
 
     if (Number(plan.status) !== PLAN_STATUS.DRAFT) throw AppError.validation({ plan: ['Only a draft plan can be published.'] });
-
-    const problems = [];
-    if (!includedModules(plan).some((row) => Number(row.module.status) === MODULE_STATUS.ACTIVE)) problems.push('Add at least one module before publishing.');
-    if (!Number.isFinite(Number(plan.pricePaise)) || Number(plan.pricePaise) < 0) problems.push('Set a price (0 or more) before publishing.');
-    if (problems.length) throw AppError.validation({ plan: problems });
+    checkPublishable(plan);
 
     await plan.update({ status: PLAN_STATUS.PUBLISHED, publishedAt: new Date(), updatedBy: ctx.admin.id }, { transaction });
 
@@ -293,6 +368,13 @@ const publish = async (ctx, uuid) =>
     );
     return output(saved);
   });
+};
+
+// POST /admin/plans/:uuid/sync-gateway
+const syncGateway = async (ctx, uuid) => {
+  await GatewaySyncService.syncPlanByUuid(uuid, ctx);
+  return output(await load(uuid));
+};
 
 // an archived plan disappears from the pricing page; schools already on it keep it
 const archive = async (ctx, uuid) =>
@@ -314,7 +396,7 @@ const archive = async (ctx, uuid) =>
     return output(saved);
   });
 
-// a new draft with the same limits and modules, one version higher (the way to change the price of a published plan)
+// a new draft with the same limits, modules and features, one version higher (the way to change the price of a published plan)
 const duplicate = async (ctx, uuid) =>
   sequelize.transaction(async (transaction) => {
     const source = await load(uuid, transaction);
@@ -340,6 +422,7 @@ const duplicate = async (ctx, uuid) =>
 
     await writeLimits(copy, limitsOf(source), transaction);
     await writeModules(copy, includedModules(source).map((row) => row.module), transaction);
+    await writeFeatures(copy, featuresOf(source), transaction);
 
     const saved = await load(copy.uuid, transaction);
     await Audit.log(
@@ -371,4 +454,4 @@ const remove = async (ctx, uuid) =>
     );
   });
 
-module.exports = { options, list, show, create, update, publish, archive, duplicate, remove };
+module.exports = { options, list, show, create, update, publish, syncGateway, archive, duplicate, remove };

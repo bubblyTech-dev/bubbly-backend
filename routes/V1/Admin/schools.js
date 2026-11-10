@@ -8,6 +8,8 @@ const StoreSchoolRequest = require('@app/Requests/V1/Admin/Schools/StoreSchoolRe
 const UpdateSchoolRequest = require('@app/Requests/V1/Admin/Schools/UpdateSchoolRequest');
 const ChangeStatusRequest = require('@app/Requests/V1/Admin/Schools/ChangeStatusRequest');
 const StoreNoteRequest = require('@app/Requests/V1/Admin/Schools/StoreNoteRequest');
+const SubscriptionController = require('@app/Controllers/V1/Admin/SubscriptionController');
+const StoreSubscriptionRequest = require('@app/Requests/V1/Admin/Subscriptions/StoreSubscriptionRequest');
 
 const router = express.Router();
 
@@ -24,6 +26,9 @@ router.get('/:uuid/status-history', requirePermission('schools.view'), validate(
 
 router.get('/:uuid/notes', requirePermission('schools.notes'), validate(ListPageRequest), SchoolController.notes);
 router.post('/:uuid/notes', requirePermission('schools.notes'), validate(StoreNoteRequest), SchoolController.addNote);
+
+router.get('/:uuid/subscriptions', requirePermission('subscriptions.view'), SubscriptionController.forSchool);
+router.post('/:uuid/subscriptions', requirePermission('subscriptions.manage'), validate(StoreSubscriptionRequest), SubscriptionController.storeForSchool);
 
 router.get('/:uuid/usage', requirePermission('schools.usage'), SchoolController.usage);
 

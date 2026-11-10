@@ -3,6 +3,8 @@
 _Update this file whenever something is finished, started or decided._
 
 ## Done
+- Plan features (backend + Admin app): a text feature list on each plan replaces the module checklist in the plan form; migration `20261025000220-create-plan-features-table.js` written, not yet run
+- Razorpay payment gateway layer (backend): `RazorpayService`, plan and customer sync, subscriptions (create, cancel at period end, manual sync), tables for subscriptions, payments, invoices and webhook events (migrations 000210 to 000214 written, to be run); webhook processing comes later
 - Plans & Modules (backend): modules, plans, plan limits, plan modules; admin CRUD with publish, archive, duplicate; public published-plan list (migrations written, not yet run)
 - Platform Settings (general, billing and tax, policy, renewals, email) with audit of every change
 - Project scaffold: Express app, `index.js` entry, config, `.env.example`, `.gitignore`
@@ -39,6 +41,8 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | Plan features: `plan_features` table and model, `features` on plan create and update, in the admin and public plan responses; Admin plan form shows an Add feature popup instead of the module checklist |
+| 2026-11-10 | Razorpay gateway layer: `RazorpayService`, plan sync on publish, customer and subscription creation, cancel at period end, sync, new billing settings, tables for subscriptions, payments, invoices and webhook events |
 | 2026-10-25 | Users & Access module: `AdminUserService`, `AuditLogService`, `Audit` and pagination helpers, `array` and `date` rules, `audit_logs` migration and model (extra `description` column), Admin app Users list/detail/permissions/sessions/login history and Audit Log pages |
 | 2026-10-25 | Plans & Modules: migrations 000110-000113, modules seeder, `PlanService`, `ModuleService`, `PlanUsage`, public plan list |
 | 2026-10-25 | Platform Settings: `platform_settings` migration and model, `config/settings.js`, `Settings` helper with cache, `GET/PUT /admin/settings`, seeder for default keys (migration 000150, seeder 000351) |

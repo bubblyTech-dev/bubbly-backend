@@ -6,8 +6,8 @@ const PlanService = require('@app/Services/V1/Admin/PlanService');
 const contextOf = (req) => ({ admin: req.admin, ...clientInfo(req) });
 
 const PlanController = {
-  options(req, res) {
-    return Response.success(res, { data: PlanService.options() });
+  async options(req, res) {
+    return Response.success(res, { data: await PlanService.options() });
   },
 
   async index(req, res) {
@@ -32,6 +32,11 @@ const PlanController = {
   async publish(req, res) {
     const plan = await PlanService.publish(contextOf(req), req.params.uuid);
     return Response.success(res, { data: { plan }, message: 'Plan published.' });
+  },
+
+  async syncGateway(req, res) {
+    const plan = await PlanService.syncGateway(contextOf(req), req.params.uuid);
+    return Response.success(res, { data: { plan }, message: 'Plan is on Razorpay.' });
   },
 
   async archive(req, res) {

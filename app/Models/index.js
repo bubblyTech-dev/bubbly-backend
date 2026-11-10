@@ -10,6 +10,7 @@ const AppModule = require('./AppModule');
 const Plan = require('./Plan');
 const PlanLimit = require('./PlanLimit');
 const PlanModule = require('./PlanModule');
+const PlanFeature = require('./PlanFeature');
 const Client = require('./Client');
 const ClientNote = require('./ClientNote');
 const ClientStatusHistory = require('./ClientStatusHistory');
@@ -17,6 +18,10 @@ const Inquiry = require('./Inquiry');
 const InquiryNote = require('./InquiryNote');
 const Announcement = require('./Announcement');
 const AnnouncementTarget = require('./AnnouncementTarget');
+const Subscription = require('./Subscription');
+const Payment = require('./Payment');
+const Invoice = require('./Invoice');
+const WebhookEvent = require('./WebhookEvent');
 
 // relationships (the database columns are plain indexed foreign keys; these are for loading related rows)
 
@@ -46,6 +51,8 @@ AdminPermission.belongsToMany(AdminUser, {
 // plans and modules
 Plan.hasMany(PlanLimit, { foreignKey: 'planId', as: 'limits' });
 PlanLimit.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
+Plan.hasMany(PlanFeature, { foreignKey: 'planId', as: 'features' });
+PlanFeature.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
 Plan.hasMany(PlanModule, { foreignKey: 'planId', as: 'planModules' });
 PlanModule.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
 PlanModule.belongsTo(AppModule, { foreignKey: 'moduleId', as: 'module' });
@@ -71,6 +78,20 @@ Announcement.hasMany(AnnouncementTarget, { foreignKey: 'announcementId', as: 'ta
 AnnouncementTarget.belongsTo(Announcement, { foreignKey: 'announcementId', as: 'announcement' });
 Announcement.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'creator' });
 
+// subscriptions, payments and invoices
+Subscription.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
+Client.hasMany(Subscription, { foreignKey: 'clientId', as: 'subscriptions' });
+Subscription.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
+Plan.hasMany(Subscription, { foreignKey: 'planId', as: 'subscriptions' });
+Subscription.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'creator' });
+Subscription.hasMany(Payment, { foreignKey: 'subscriptionId', as: 'payments' });
+Payment.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
+Payment.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
+Subscription.hasMany(Invoice, { foreignKey: 'subscriptionId', as: 'invoices' });
+Invoice.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
+Invoice.belongsTo(Payment, { foreignKey: 'paymentId', as: 'payment' });
+Invoice.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
+
 module.exports = {
   AdminUser,
   AdminPermission,
@@ -84,6 +105,7 @@ module.exports = {
   Plan,
   PlanLimit,
   PlanModule,
+  PlanFeature,
   Client,
   ClientNote,
   ClientStatusHistory,
@@ -91,4 +113,8 @@ module.exports = {
   InquiryNote,
   Announcement,
   AnnouncementTarget,
+  Subscription,
+  Payment,
+  Invoice,
+  WebhookEvent,
 };

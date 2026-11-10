@@ -2,6 +2,8 @@ const Resource = require('@app/Resources/Resource');
 const plansConfig = require('@config/plans');
 
 // What the public pricing page may see of a published plan. No ids, no internal fields.
+// `features` is the plan's text list in order (['Unlimited attendance records', ...]). The older `modules` field is gone:
+// modules control access inside the app, features are what the pricing page shows.
 class PublicPlanResource extends Resource {
   toArray() {
     const plan = this.resource;
@@ -18,11 +20,9 @@ class PublicPlanResource extends Resource {
       taxInclusive: Number(plan.taxInclusive) === 1,
       isFeatured: Number(plan.isFeatured) === 1,
       limits: plansConfig.limits.map(({ key, label }) => ({ key, label, value: stored.has(key) ? stored.get(key) : null })),
-      modules: (plan.planModules || [])
-        .filter((row) => Number(row.included) === 1 && row.module && Number(row.module.status) === 1)
-        .map((row) => row.module)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((module) => ({ moduleKey: module.moduleKey, name: module.name })),
+      features: [...(plan.features || [])]
+        .sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id))
+        .map((row) => row.title),
     };
   }
 }

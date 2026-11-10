@@ -15,6 +15,7 @@ router.post('/', requirePermission('plans.create'), validate(StorePlanRequest), 
 router.get('/:uuid', requirePermission('plans.view'), PlanController.show);
 router.patch('/:uuid', requirePermission('plans.edit'), validate(UpdatePlanRequest), PlanController.update);
 router.post('/:uuid/publish', requirePermission('plans.publish'), PlanController.publish);
+router.post('/:uuid/sync-gateway', requirePermission('plans.publish'), PlanController.syncGateway);
 router.post('/:uuid/archive', requirePermission('plans.archive'), PlanController.archive);
 router.post('/:uuid/duplicate', requirePermission('plans.create'), PlanController.duplicate);
 router.delete('/:uuid', requirePermission('plans.archive'), PlanController.destroy);

@@ -19,6 +19,7 @@ module.exports = defineModel(
     postalCode: DataTypes.STRING(20),
     country: DataTypes.STRING(100),
     gstNumber: DataTypes.STRING(20),
+    razorpayCustomerId: DataTypes.STRING(60), // this school as a Razorpay customer
     logo: DataTypes.STRING(120), // file name only; the folder comes from config/files.js
     timezone: DataTypes.STRING(60),
     createdBy: DataTypes.BIGINT,

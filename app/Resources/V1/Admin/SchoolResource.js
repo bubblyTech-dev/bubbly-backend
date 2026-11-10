@@ -23,6 +23,7 @@ class SchoolResource extends Resource {
       gstNumber: school.gstNumber,
       logo: Files.url('clientLogo', school.logo),
       timezone: school.timezone,
+      razorpayCustomerId: school.razorpayCustomerId, // admin API only
       createdAt: school.createdAt,
       updatedAt: school.updatedAt,
     };

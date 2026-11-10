@@ -95,8 +95,9 @@ Use `this.when(condition, value)` for optional fields and `Files.url(type, name)
 - **Modules** (`modules` table, model `AppModule`) are the features a school can use. Seeded by `database/seeders/20261025000301-modules.js` (safe to re-run, never overwrites edited names). A **core** module is part of every plan and cannot be made inactive; the server adds core modules to every plan.
 - **Plans** (`plans`, `plan_limits`, `plan_modules`): money is stored in **paise**. Status `1: Draft, 2: Published, 3: Archived`. Limit keys live in `config/plans.js` (a limit with no value is unlimited).
 - **Lifecycle:** Draft (everything editable) -> Published (price, interval, tax and slug are locked; name, description, sort, featured, limits and modules can still change, but limits and modules can only shrink while no school uses the plan) -> Archived (read only). To change the price of a published plan, **duplicate** it: the copy is a new draft with `version + 1`.
+- **Features** (`plan_features`, model `PlanFeature`): the plan form has a simple list of text lines (max 30, each 1-200 characters, no repeats in any letter case) that the admin adds, edits, reorders and removes. They are only the description shown on the pricing page and never control access (modules and limits do that). Send `features` as an array of strings on create or update; it replaces the whole list, an empty array clears it, leaving it out keeps it. A feature that stays in the list keeps its row and uuid. Features may change on a Published plan (text only) but not on an Archived one, and a duplicate copies them. The admin form no longer shows a module picker; core modules are still added to every plan by the server, so the publish rule that a plan needs a module still passes.
 - Only a draft can be deleted (soft delete), and only when nobody uses it. `PlanUsage.count(plan)` returns 0 until subscriptions exist; change only that function then.
-- `GET /api/v1/common/plans` is the public list (published plans only, no internal fields).
+- `GET /api/v1/common/plans` is the public list (published plans only, no internal fields). Each plan carries `features`, an ordered list of titles. The older `modules` field is no longer part of this response.
 ## Schools (clients)
 - A school is a row in `clients`; `clients.id` is the tenant id used as `client_id` in every school-owned table. The API only ever shows its `uuid`.
 - Status: `1: Active, 2: Suspended, 3: Archived`. Allowed changes: Active to Suspended or Archived, Suspended to Active or Archived, Archived to Active. Every change needs a reason and is written to `client_status_history` and the audit log.
@@ -125,6 +126,17 @@ Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs,
 - Schools read `GET /api/v1/common/announcements/active` (public group, rate limited). It returns only announcements for all schools until school login exists; per-school targeting is added then.
 - Audit actions: `announcement.created / updated / published / unpublished / deleted`.
 - The request rule `datetime` accepts ISO times such as `2026-11-01T09:30`.
+
+## Payment gateway (Razorpay Subscriptions)
+- **One file talks to Razorpay**: `app/Services/V1/Common/PaymentGateway/RazorpayService.js`. Add a new Razorpay call there, never anywhere else. Keys come only from `.env` (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`) through `config/payment.js` and are never logged.
+- **Store every Razorpay id** we get back in its own column: `plans.razorpay_plan_id`, `clients.razorpay_customer_id`, `subscriptions.razorpay_subscription_id` (plus plan and customer), and the payment, order, invoice and refund ids on `payments`/`invoices`.
+- **Razorpay has no separate products**: a plan carries the item (name, amount, currency). A Razorpay plan cannot be edited, so it is created once when a plan is published (or with `POST /admin/plans/:uuid/sync-gateway`) and never re-created. A published plan's price is already locked in our own rules.
+- **Razorpay first, then our database**: if Razorpay refuses, nothing is saved on our side. Publishing a plan fails with the gateway message and the plan stays a draft; without keys a plan still publishes and stays "not synced".
+- **A subscription is created as Pending** and is never marked Active by the admin API. Activation comes only from the verified webhook (built later). `POST /admin/subscriptions/:uuid/sync` refreshes one subscription from Razorpay by hand until then.
+- **Cancellation is always at the end of the billing period.** A subscription that never started has no period, and Razorpay refuses "end of period" for it, so it is cancelled at once. We never mark one Cancelled on our side while Razorpay may still charge it.
+- **Status mapping:** created and authenticated -> Pending; active -> Active; pending -> Past due; halted and paused -> Suspended; cancelled -> Cancelled; completed and expired -> Expired.
+- **Billing numbers live in platform settings**, not in code: GST rate and number, invoice prefix, company name and address, SAC code, grace days, and the automatic-charge note `billing.max_auto_charge_rupees` (banks limit automatic debit, about 15,000 rupees per charge; the plan form only warns).
+- `fail_existing` for a Razorpay customer must be the string `"0"`; a number is ignored.
 
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).

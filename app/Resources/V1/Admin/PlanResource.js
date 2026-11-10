@@ -8,6 +8,12 @@ const limitsOf = (plan) => {
   return Object.fromEntries(plansConfig.limits.map(({ key }) => [key, stored.has(key) ? stored.get(key) : null]));
 };
 
+// the feature list in order: [{ uuid, title }]
+const featuresOf = (plan) =>
+  [...(plan.features || [])]
+    .sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id))
+    .map((row) => ({ uuid: row.uuid, title: row.title }));
+
 const modulesOf = (plan) =>
   (plan.planModules || [])
     .filter((row) => Number(row.included) === 1 && row.module)
@@ -31,10 +37,14 @@ class PlanResource extends Resource {
       sortOrder: plan.sortOrder,
       isFeatured: Number(plan.isFeatured) === 1,
       version: plan.version,
+      razorpayPlanId: plan.razorpayPlanId,
+      gatewaySynced: Boolean(plan.razorpayPlanId),
+      razorpaySyncedAt: plan.razorpaySyncedAt,
       publishedAt: plan.publishedAt,
       archivedAt: plan.archivedAt,
       createdAt: plan.createdAt,
       limits: limitsOf(plan),
+      features: featuresOf(plan),
       modules: ModuleResource.collection(modulesOf(plan)),
       inUse: this.extra.inUse ?? 0,
     };
