@@ -1,6 +1,6 @@
 const Resource = require('@app/Resources/Resource');
 
-// A payment reported by Razorpay. Money is in paise. The raw gateway object is only included for the detail view.
+// A payment reported by Razorpay, or an offline payment recorded by staff. Money is in paise. The raw gateway object is only included for the detail view.
 class PaymentResource extends Resource {
   toArray() {
     const payment = this.resource;
@@ -8,6 +8,7 @@ class PaymentResource extends Resource {
     return {
       uuid: payment.uuid,
       status: Number(payment.status),
+      source: Number(payment.source) || 1, // 1: Razorpay, 2: Offline
       client: this.when(payment.client, () => ({ uuid: payment.client.uuid, name: payment.client.name })),
       subscriptionUuid: this.when(payment.subscription, () => payment.subscription.uuid),
       razorpayPaymentId: payment.razorpayPaymentId,
@@ -26,6 +27,9 @@ class PaymentResource extends Resource {
       offline: !payment.razorpayPaymentId, // no Razorpay payment id: recorded by staff, a refund is only recorded
       failureCode: payment.failureCode,
       failureReason: payment.failureReason,
+      reference: payment.reference,
+      notes: payment.notes,
+      recordedBy: this.when(payment.recorder, () => payment.recorder.name || payment.recorder.email),
       paidAt: payment.paidAt,
       createdAt: payment.createdAt,
       gatewayData: this.when(this.extra.withGateway, () => payment.gatewayData),

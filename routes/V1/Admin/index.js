@@ -20,6 +20,7 @@ router.use('/settings', require('./settings'));
 router.use('/schools', require('./schools'));
 router.use('/subscriptions', require('./subscriptions'));
 router.use('/renewals', require('./renewals'));
+router.use('/payments', require('./offlinePayments')); // record an offline payment (matched before the billing router)
 router.use(require('./billing')); // webhook events, payments and invoices
 router.use('/inquiries', require('./inquiries'));
 router.use(require('./ping')); // TEMP demo

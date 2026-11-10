@@ -2,7 +2,7 @@ const { Op } = require('sequelize');
 const AppError = require('@app/Helpers/AppError');
 const { paginationParams } = require('@app/Helpers/pagination');
 const { isUuid } = require('@app/Helpers/ref');
-const { Client, Subscription, Payment, Invoice, WebhookEvent } = require('@app/Models');
+const { AdminUser, Client, Subscription, Payment, Invoice, WebhookEvent } = require('@app/Models');
 const WebhookEventResource = require('@app/Resources/V1/Admin/WebhookEventResource');
 const PaymentResource = require('@app/Resources/V1/Admin/PaymentResource');
 const InvoiceResource = require('@app/Resources/V1/Admin/InvoiceResource');
@@ -14,6 +14,7 @@ const likeOf = (text) => `%${escapeLike(text)}%`;
 const newestFirst = [['createdAt', 'DESC'], ['id', 'DESC']];
 
 const clientInclude = { model: Client, as: 'client', attributes: ['id', 'uuid', 'name'] };
+const recorderInclude = { model: AdminUser, as: 'recorder', attributes: ['id', 'name', 'email'] };
 const subscriptionInclude = { model: Subscription, as: 'subscription', attributes: ['id', 'uuid'] };
 
 // ---------- webhook events ----------
@@ -48,15 +49,20 @@ const listPayments = async (query) => {
   const { page, perPage, limit, offset } = paginationParams(query);
   const where = {};
   if (query.status) where.status = Number(query.status);
+  if (query.source) where.source = Number(query.source);
   if (query.subscription && isUuid(query.subscription)) where['$subscription.uuid$'] = query.subscription;
   if (query.search) {
     const pattern = likeOf(query.search);
-    where[Op.or] = [{ '$client.name$': { [Op.iLike]: pattern } }, { razorpayPaymentId: { [Op.iLike]: pattern } }];
+    where[Op.or] = [
+      { '$client.name$': { [Op.iLike]: pattern } },
+      { razorpayPaymentId: { [Op.iLike]: pattern } },
+      { reference: { [Op.iLike]: pattern } },
+    ];
   }
 
   const { rows, count } = await Payment.findAndCountAll({
     where,
-    include: [clientInclude, subscriptionInclude],
+    include: [clientInclude, subscriptionInclude, recorderInclude],
     order: newestFirst,
     limit,
     offset,
@@ -65,7 +71,7 @@ const listPayments = async (query) => {
 };
 
 const showPayment = async (uuid) => {
-  const payment = isUuid(uuid) ? await Payment.findOne({ where: { uuid }, include: [clientInclude, subscriptionInclude] }) : null;
+  const payment = isUuid(uuid) ? await Payment.findOne({ where: { uuid }, include: [clientInclude, subscriptionInclude, recorderInclude] }) : null;
   if (!payment) throw AppError.notFound();
   return PaymentResource.make(payment, { withGateway: true });
 };

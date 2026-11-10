@@ -18,7 +18,7 @@ backend/
 │   ├── Rules/                                validation rule functions (planned)
 │   ├── Middleware/                           authenticate, resolveClient, groups.js, ...
 │   ├── Models/                               Sequelize models (+ BaseModel, planned)
-│   ├── Jobs/                                 background jobs (BullMQ, planned)
+│   ├── Jobs/                                 SubscriptionExpiryJob (in-process, hourly); BullMQ jobs planned
 │   ├── Mail/                                 email templates
 │   ├── Providers/                            payment gateway, storage, mailer adapters
 │   └── Helpers/                              logger.js, database.js (shared Sequelize instance + startup connect), response helpers

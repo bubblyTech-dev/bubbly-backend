@@ -10,6 +10,7 @@ const Subscription = defineModel(
     clientId: { type: DataTypes.BIGINT, allowNull: false },
     planId: { type: DataTypes.BIGINT, allowNull: false },
     status: { type: DataTypes.SMALLINT, defaultValue: 1 }, // 1: Pending, 2: Active, 3: Past due, 4: Cancelled, 5: Expired, 6: Suspended
+    source: { type: DataTypes.SMALLINT, defaultValue: 1 }, // 1: Razorpay, 2: Offline (recorded by staff, no Razorpay subscription)
     razorpaySubscriptionId: DataTypes.STRING(60),
     razorpayPlanId: DataTypes.STRING(60),
     razorpayCustomerId: DataTypes.STRING(60),

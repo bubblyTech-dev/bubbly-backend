@@ -1,10 +1,14 @@
 const { DataTypes } = require('sequelize');
 const defineModel = require('./BaseModel');
 
-// A payment attempt reported by Razorpay. Money is in paise.
+// A payment reported by Razorpay, or recorded by staff when a school pays offline. Money is in paise.
 module.exports = defineModel('Payment', 'payments', {
   clientId: { type: DataTypes.BIGINT, allowNull: false },
   subscriptionId: DataTypes.BIGINT,
+  source: { type: DataTypes.SMALLINT, defaultValue: 1 }, // 1: Razorpay, 2: Offline (recorded by staff)
+  recordedBy: DataTypes.BIGINT, // staff member who recorded an offline payment
+  reference: DataTypes.STRING(120), // bank reference, cheque number or UPI id of an offline payment
+  notes: DataTypes.STRING(500), // internal note on an offline payment
   razorpayPaymentId: DataTypes.STRING(60),
   razorpayOrderId: DataTypes.STRING(60),
   razorpayInvoiceId: DataTypes.STRING(60),

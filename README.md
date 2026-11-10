@@ -201,7 +201,10 @@ Base URL: `http://localhost:3000/api`
 | POST | `/webhooks/payment` | Razorpay webhook (raw body, signature checked, duplicates ignored). Not versioned | Working |
 | GET | `/v1/admin/webhook-events`, `/:uuid` | Stored webhook calls with their payload | Working |
 | POST | `/v1/admin/webhook-events/:uuid/reprocess` | Run a failed event again | Working |
-| GET | `/v1/admin/payments`, `/:uuid` | Payments reported by Razorpay | Working |
+| GET | `/v1/admin/payments`, `/:uuid` | Payments (Razorpay and offline), filter by `source`, search by reference | Working |
+| GET | `/v1/admin/payments/offline-options` | Offline payment methods (from Settings) | Working |
+| POST | `/v1/admin/payments/offline` | Record a payment received outside Razorpay (school, plan, amount, method, valid until) | Working |
+| POST | `/v1/admin/subscriptions/:uuid/expiry` | Change the valid-until date of an offline subscription | Working |
 | GET | `/v1/admin/invoices`, `/:uuid` | Our GST invoices | Working |
 | GET | `/v1/admin/invoices/:uuid/pdf` | Download an invoice as a PDF | Working |
 | GET | `/v1/admin/payments/refund-options` | Refund reasons from Settings | Working |

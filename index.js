@@ -9,6 +9,7 @@ const helmet = require('helmet');
 
 const auth = require('@config/auth');
 const Files = require('@app/Helpers/files');
+const SubscriptionExpiryJob = require('@app/Jobs/SubscriptionExpiryJob');
 const { connect: connectDatabase } = require('@app/Helpers/database');
 const { notFound, errorHandler } = require('@app/Middleware/errorHandler');
 
@@ -40,6 +41,9 @@ const start = async () => {
   // uploads nobody saved are deleted after a day
   Files.cleanTemp().catch(() => {});
   setInterval(() => Files.cleanTemp().catch(() => {}), 3600 * 1000).unref();
+
+  // offline schools have no Razorpay to tell us when their paid period ends
+  SubscriptionExpiryJob.start();
 
   app.listen(config.port, () => {
     logger.title('Server ready');
