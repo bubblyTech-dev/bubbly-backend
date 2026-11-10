@@ -9,6 +9,8 @@ const { sequelize } = require('@app/Helpers/database');
 const { CLIENT_STATUS, PLAN_STATUS, SUBSCRIPTION_STATUS, YES, NO } = require('@app/Helpers/constants');
 const { Client, Plan, Subscription } = require('@app/Models');
 const SubscriptionResource = require('@app/Resources/V1/Admin/SubscriptionResource');
+const Settings = require('@app/Helpers/settings');
+const Tax = require('@app/Helpers/tax');
 const Razorpay = require('@app/Services/V1/Common/PaymentGateway/RazorpayService');
 const GatewaySyncService = require('./GatewaySyncService');
 
@@ -161,7 +163,8 @@ const create = async ({ client, plan, startAt, ctx }) => {
           ...fieldsFromRazorpay(remote),
           status: S.PENDING, // never Active from here, whatever Razorpay says
           billingInterval: plan.billingInterval,
-          amountPaise: plan.pricePaise,
+          // what the school is charged each period (price + GST for a plan that is not tax inclusive)
+          amountPaise: Tax.chargeAmountPaise(plan, await Settings.get('billing.gst_rate_percent')),
           currency: plan.currency,
           cancelAtCycleEnd: NO,
           createdBy: ctx.admin.id,
@@ -293,4 +296,4 @@ const sync = async (uuid, ctx) => {
   return SubscriptionResource.make(await loadOne(uuid));
 };
 
-module.exports = { list, listForSchool, show, create, createForSchool, cancel, sync, STATUS_FROM_RAZORPAY };
+module.exports = { list, listForSchool, show, create, createForSchool, cancel, sync, STATUS_FROM_RAZORPAY, fieldsFromRazorpay };

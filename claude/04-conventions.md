@@ -138,6 +138,13 @@ Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs,
 - **Billing numbers live in platform settings**, not in code: GST rate and number, invoice prefix, company name and address, SAC code, grace days, and the automatic-charge note `billing.max_auto_charge_rupees` (banks limit automatic debit, about 15,000 rupees per charge; the plan form only warns).
 - `fail_existing` for a Razorpay customer must be the string `"0"`; a number is ignored.
 
+## Payment webhook (Razorpay)
+- One endpoint, `POST /api/webhooks/payment`, unversioned. Its body is read RAW (`express.raw` for that path in `index.js`, registered BEFORE `express.json`) because the signature covers the exact bytes. Never add a body parser in front of it.
+- Everything goes through `WebhookIngest.handle()`: signature check, then store + process inside a transaction under an advisory lock on the event id (duplicates are skipped in code, there is no unique constraint), the handler runs in a savepoint, a failure leaves the event as Failed (HTTP 500 so Razorpay retries). The dev replay (`POST /admin/dev/webhook-replay`, not mounted in production) calls the same function.
+- Handlers live in `Services/V1/Common/Webhooks/handlers/` and are listed in `WebhookProcessor.js`. They are idempotent, tolerate out-of-order events, take a lock per subscription and never trust the browser.
+- **Invoices:** one per captured payment, number `PREFIX-YYYY-NNNN` from the `invoice_counters` row of the (Indian) calendar year, taken in the same transaction under a lock, so numbers never repeat. Seller details come from the billing settings, buyer details from the school, both copied onto the invoice. The invoice total is what Razorpay actually charged. A plan that is not tax inclusive is charged price + GST (`Helpers/tax.js`, applied when the plan is synced to Razorpay), so the invoice shows the price as subtotal and the rest as GST; a tax-inclusive plan has its GST taken out of the total.
+- A first activation runs `Provisioning.onSubscriptionActivated` (school Active, Principal login + welcome email). Its failures go to the audit log and never fail the webhook.
+
 ## Git
 - Never commit `.env`, keys, dumps or uploads (see `.gitignore`).
 - Commit `package-lock.json`.

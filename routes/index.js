@@ -8,6 +8,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/files', require('./files')); // stored files, not versioned
+router.use('/webhooks', require('./webhooks')); // payment provider callbacks, not versioned
 router.use(`/${app.apiVersion}`, require('./V1'));
 
 module.exports = router;
