@@ -20,6 +20,10 @@ class PaymentResource extends Resource {
       feePaise: payment.feePaise === null ? null : Number(payment.feePaise),
       taxPaise: payment.taxPaise === null ? null : Number(payment.taxPaise),
       refundedPaise: Number(payment.refundedPaise) || 0,
+      refundablePaise: [3, 6].includes(Number(payment.status))
+        ? Math.max(0, Number(payment.amountPaise) - (Number(payment.refundedPaise) || 0))
+        : 0,
+      offline: !payment.razorpayPaymentId, // no Razorpay payment id: recorded by staff, a refund is only recorded
       failureCode: payment.failureCode,
       failureReason: payment.failureReason,
       paidAt: payment.paidAt,
