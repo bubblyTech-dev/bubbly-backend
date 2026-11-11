@@ -197,6 +197,8 @@ Base URL: `http://localhost:3000/api`
 | GET / POST | `/v1/admin/schools/:uuid/subscriptions` | List a school's subscriptions, create one through Razorpay (Pending until the webhook) | Working |
 | GET | `/v1/admin/subscriptions`, `/v1/admin/subscriptions/:uuid` | All subscriptions, one subscription | Working |
 | POST | `/v1/admin/subscriptions/:uuid/cancel`, `/sync` | Cancel at the end of the period, refresh from Razorpay | Working |
+| GET | `/v1/admin/analytics/meta`, `/v1/admin/analytics`, `/v1/admin/analytics/:key?preset=&from=&to=&compare=&plan=&status=&source=&format=` | Analytics datasets, filter options; `format=csv\|xlsx` downloads (needs `reports.export`) | Working |
+| GET | `/v1/admin/reports`, `/v1/admin/reports/:key?preset=&from=&to=&page=&perPage=&format=` | Report catalogue, a report preview with filters, CSV or Excel download | Working |
 | GET | `/v1/admin/renewals/counts`, `/v1/admin/renewals?tab=` | Renewals: due soon, payment failed, in grace, suspended (with counts and the money due soon) | Working |
 | POST | `/webhooks/payment` | Razorpay webhook (raw body, signature checked, duplicates ignored). Not versioned | Working |
 | GET | `/v1/admin/webhook-events`, `/:uuid` | Stored webhook calls with their payload | Working |

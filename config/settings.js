@@ -12,6 +12,7 @@ const groups = {
   renewals: { label: 'Renewals', sortOrder: 4 },
   email: { label: 'Email', sortOrder: 5 },
   notifications: { label: 'Notifications', sortOrder: 6 },
+  reports: { label: 'Reports & analytics', sortOrder: 7 },
 };
 
 const definitions = [
@@ -249,6 +250,36 @@ const definitions = [
     default: true,
     label: 'Show new inquiries in the notification bell',
     description: 'Admins with inquiry access see a notification when a new inquiry arrives.',
+  },
+  {
+    key: 'reports.fiscal_year_start_month',
+    group: 'reports',
+    type: 'integer',
+    default: 4,
+    label: 'Financial year starts in month',
+    description: 'Used for "This financial year" and yearly reports. 4 means April to March (India); 1 means January to December.',
+    min: 1,
+    max: 12,
+  },
+  {
+    key: 'reports.default_range',
+    group: 'reports',
+    type: 'string',
+    default: 'last_30_days',
+    label: 'Default date range',
+    description: 'What analytics and reports show when they open. One of: today, yesterday, last_7_days, last_30_days, last_90_days, last_12_months, this_month, last_month, this_quarter, this_fiscal_year, last_fiscal_year.',
+    maxLength: 30,
+    allowed: ['today', 'yesterday', 'last_7_days', 'last_30_days', 'last_90_days', 'last_12_months', 'this_month', 'last_month', 'this_quarter', 'this_fiscal_year', 'last_fiscal_year'],
+  },
+  {
+    key: 'reports.max_export_rows',
+    group: 'reports',
+    type: 'integer',
+    default: 50000,
+    label: 'Largest export (rows)',
+    description: 'A CSV or Excel download with more rows than this is refused, so a huge export cannot slow the server down.',
+    min: 100,
+    max: 200000,
   },
 ];
 

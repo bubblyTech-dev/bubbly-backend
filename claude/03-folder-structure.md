@@ -69,3 +69,9 @@ Not versioned: Rules, Middleware, Models, Jobs, Mail, Providers, Helpers, migrat
 
 ## Inquiries (support inbox)
 Public form: `routes/V1/Common/inquiries.js` -> `Controllers/V1/Common/InquiryController.js` -> `Services/V1/Common/InquiryService.js`. Admin side: `routes/V1/Admin/inquiries.js`, `Controllers/V1/Admin/InquiryController.js`, `Services/V1/Admin/InquiryService.js`, requests in `Requests/V1/{Admin,Common}/Inquiries/`, resources `InquiryResource` and `InquiryNoteResource`. Models `Inquiry` and `InquiryNote`; migrations `...000170` and `...000171`.
+
+## Analytics and reports (see 07-analytics-and-reports.md)
+- `app/Helpers/dateRange.js`: date ranges, presets and the financial year, all in India time.
+- `app/Services/V1/Admin/Analytics/`: `registry.js` (auto-loads `definitions/*.js`), `AnalyticsService.js`, `series.js` (time-bucket helpers), `definitions/` (one file per dataset).
+- `app/Services/V1/Admin/Reports/`: `registry.js` (auto-loads `definitions/*.js`), `ReportService.js`, `ExportService.js` (CSV and Excel), `RangeService.js`, `optionSets.js` (names for the integer codes), `definitions/` (one file per report).
+- `app/Middleware/requireExportPermission.js`: downloads (`?format=`) need `reports.export`.
