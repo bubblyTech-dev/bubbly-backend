@@ -1,13 +1,16 @@
 const Settings = require('@app/Helpers/settings');
-const { Subscription, Plan, PlanModule, AppModule } = require('@app/Models');
-const { SUBSCRIPTION_STATUS, MODULE_STATUS, YES } = require('@app/Helpers/constants');
+const { Subscription, Plan } = require('@app/Models');
+const { SUBSCRIPTION_STATUS } = require('@app/Helpers/constants');
+const Entitlements = require('./Entitlements');
 
 // Decides what a school may use right now, from its subscription (the server decides, never the browser).
 //
 //   const access = await SubscriptionAccess.forClient(clientId)
 //   access.allowed       true when the school may use the workspace
 //   access.message       why not (shown to the user)
-//   access.moduleKeys    Set of module keys the plan includes (core modules always)
+//   access.moduleKeys    Set of module keys the school may use: the plan's modules (core always) plus/minus the school's
+//                        overrides (see Entitlements.js)
+//   access.limits        effective limits { max_students: 100, storage_mb: null }  (null = unlimited)
 //   access.subscription  the subscription that counts (or null), access.plan its plan
 //
 // Rules: Active passes. Past due passes only inside the grace period (policy.grace_days from Settings, counted from
@@ -28,17 +31,6 @@ const pickCurrent = (subscriptions) =>
   subscriptions[0] ||
   null;
 
-const moduleKeysFor = async (plan) => {
-  const modules = await AppModule.findAll({ where: { status: MODULE_STATUS.ACTIVE } });
-  const keys = new Set(modules.filter((m) => Number(m.isCore) === YES).map((m) => m.moduleKey));
-  if (!plan) return keys;
-
-  const links = await PlanModule.findAll({ where: { planId: plan.id, included: YES } });
-  const included = new Set(links.map((link) => String(link.moduleId)));
-  for (const m of modules) if (included.has(String(m.id))) keys.add(m.moduleKey);
-  return keys;
-};
-
 const withinGrace = async (subscription) => {
   const graceDays = Number(await Settings.get('policy.grace_days')) || 0;
   const reference = subscription.currentPeriodEnd || subscription.updatedAt;
@@ -46,19 +38,27 @@ const withinGrace = async (subscription) => {
   return Date.now() <= new Date(reference).getTime() + graceDays * 86400000;
 };
 
-const forClient = async (clientId) => {
-  const subscriptions = await Subscription.findAll({ where: { clientId }, order: [['id', 'DESC']] });
+// the subscription that counts for a school, its plan and the entitlements (plan + overrides)
+const currentFor = async (clientId, { transaction } = {}) => {
+  const subscriptions = await Subscription.findAll({ where: { clientId }, order: [['id', 'DESC']], transaction });
   const subscription = pickCurrent(subscriptions);
-  const plan = subscription ? await Plan.findByPk(subscription.planId) : null;
-  const moduleKeys = await moduleKeysFor(plan);
+  const plan = subscription ? await Plan.findByPk(subscription.planId, { transaction }) : null;
+  const entitlements = await Entitlements.compute({ clientId, subscription, plan, transaction });
+  return { subscription, plan, entitlements };
+};
 
-  if (!subscription) return { allowed: false, message: MESSAGES.none, status: null, subscription: null, plan: null, moduleKeys };
+const forClient = async (clientId) => {
+  const { subscription, plan, entitlements } = await currentFor(clientId);
+  const moduleKeys = entitlements.moduleKeys;
+  const limits = entitlements.limitValues;
+
+  if (!subscription) return { allowed: false, message: MESSAGES.none, status: null, subscription: null, plan: null, moduleKeys, limits };
 
   const status = Number(subscription.status);
   let allowed = status === SUBSCRIPTION_STATUS.ACTIVE;
   if (status === SUBSCRIPTION_STATUS.PAST_DUE) allowed = await withinGrace(subscription);
 
-  return { allowed, message: allowed ? null : MESSAGES[status] || MESSAGES.none, status, subscription, plan, moduleKeys };
+  return { allowed, message: allowed ? null : MESSAGES[status] || MESSAGES.none, status, subscription, plan, moduleKeys, limits };
 };
 
-module.exports = { forClient };
+module.exports = { forClient, currentFor, pickCurrent };

@@ -51,6 +51,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-11-13 | Plan features can link to a module (`plan_features.module_id`, migration 000360) and the plan's modules are rebuilt from the links; per-school entitlement overrides: `client_modules` and `client_limits` (migrations 000361, 000362), `Entitlements` + `EntitlementService`, `GET/PUT/DELETE /admin/schools/:uuid/entitlements...`, new permission `schools.entitlements` (re-run the permissions seeder), `SubscriptionAccess` now returns effective modules and limits |
 | 2026-11-12 | Dashboard: `DashboardService`, `DashboardResource`, `GET /admin/dashboard`; revenue is Paid invoice subtotals minus refunds without GST (a refund counts in the period of its invoice), MRR is the monthly amount without GST of Active subscriptions, previous-period Active count and MRR are estimates from start and end dates; the template demo dashboard was removed |
 | 2026-11-12 | Analytics pages Schools, Subscriptions, Revenue and Payments health: datasets `schools.growth`, `subscriptions.overview`, `revenue.overview`, `payments.health` (rules written at the top of each file), shared SQL helper `Analytics/helpers/billingSql.js` |
 | 2026-11-12 | Analytics (group B): datasets renewals.churn, inquiries.overview, plans.overview, security.overview, system.health, announcements.overview (+ helpers/areaBShared.js) |

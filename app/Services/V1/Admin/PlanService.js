@@ -21,7 +21,7 @@ const LOCKED_MESSAGE = 'This plan is published, so this cannot change. Duplicate
 
 const fullInclude = [
   { model: PlanLimit, as: 'limits' },
-  { model: PlanFeature, as: 'features' },
+  { model: PlanFeature, as: 'features', include: [{ model: AppModule, as: 'module', attributes: ['id', 'moduleKey'] }] },
   { model: PlanModule, as: 'planModules', include: [{ model: AppModule, as: 'module' }] },
 ];
 
@@ -54,9 +54,11 @@ const limitsOf = (plan) => {
   return Object.fromEntries(LIMIT_KEYS.map((key) => [key, stored.has(key) ? stored.get(key) : null]));
 };
 
-// the plan's features as text, in list order
+// the plan's features in list order: [{ title, moduleKey }]  (moduleKey is null when the line is text only)
 const featuresOf = (plan) =>
-  [...(plan.features || [])].sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id)).map((row) => row.title);
+  [...(plan.features || [])]
+    .sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id))
+    .map((row) => ({ title: row.title, moduleKey: row.module ? row.module.moduleKey : null }));
 
 const includedModules = (plan) => (plan.planModules || []).filter((row) => Number(row.included) === YES && row.module);
 
@@ -96,25 +98,47 @@ const parseLimits = (input) => {
   return parsed;
 };
 
-// ['Line one', 'Line two'] -> trimmed, no empty lines, no repeats (any letter case), at most 30
+// A feature is a text line, or { title, moduleKey } when it also unlocks a module.
+// ['Line one', { title: 'Fees', moduleKey: 'fees' }] -> [{ title, moduleKey }] trimmed, no empty lines, no repeats
+// (any letter case), at most 30. A module key must belong to an ACTIVE module (checked in resolveFeatureModules).
 const parseFeatures = (input) => {
   if (input === undefined || input === null) return null;
-  if (!Array.isArray(input) || input.some((item) => typeof item !== 'string')) {
-    throw AppError.validation({ features: ['The features are not valid.'] });
-  }
+  if (!Array.isArray(input)) throw AppError.validation({ features: ['The features are not valid.'] });
   if (input.length > MAX_FEATURES) throw AppError.validation({ features: [`A plan can have at most ${MAX_FEATURES} features.`] });
 
   const seen = new Set();
-  const titles = [];
-  for (const raw of input) {
-    const title = raw.trim().replace(/\s+/g, ' ');
+  const features = [];
+  for (const item of input) {
+    const isText = typeof item === 'string';
+    const isObject = item !== null && typeof item === 'object' && !Array.isArray(item) && typeof item.title === 'string';
+    if (!isText && !isObject) throw AppError.validation({ features: ['The features are not valid.'] });
+
+    const title = (isText ? item : item.title).trim().replace(/\s+/g, ' ');
+    const rawKey = isObject ? item.moduleKey : null;
+    if (rawKey !== undefined && rawKey !== null && rawKey !== '' && typeof rawKey !== 'string') {
+      throw AppError.validation({ features: ['The features are not valid.'] });
+    }
+    const moduleKey = rawKey ? String(rawKey).trim() : null;
+
     if (!title) throw AppError.validation({ features: ['A feature cannot be empty.'] });
     if (title.length > MAX_FEATURE_LENGTH) throw AppError.validation({ features: [`A feature must not be longer than ${MAX_FEATURE_LENGTH} characters.`] });
     if (seen.has(title.toLowerCase())) continue;
     seen.add(title.toLowerCase());
-    titles.push(title);
+    features.push({ title, moduleKey });
   }
-  return titles;
+  return features;
+};
+
+// module keys of the features -> active modules (a Map key -> module). Unknown or inactive keys are a 422 on `features`.
+const resolveFeatureModules = async (features, transaction) => {
+  const keys = [...new Set(features.map((feature) => feature.moduleKey).filter(Boolean))];
+  if (!keys.length) return new Map();
+
+  const modules = await AppModule.findAll({ where: { moduleKey: keys, status: MODULE_STATUS.ACTIVE }, transaction });
+  const found = new Map(modules.map((module) => [module.moduleKey, module]));
+  const missing = keys.filter((key) => !found.has(key));
+  if (missing.length) throw AppError.validation({ features: [`Unknown or inactive module: ${missing.join(', ')}.`] });
+  return found;
 };
 
 // module uuids -> modules. Core modules are always part of a plan, so they are added here.
@@ -144,7 +168,7 @@ const writeLimits = async (plan, limits, transaction) => {
 
 // The plan ends up with exactly these features, in this order. A feature that is still in the list keeps its row
 // (and uuid); removed ones are deleted and new ones are added.
-const writeFeatures = async (plan, titles, transaction) => {
+const writeFeatures = async (plan, features, modulesByKey, transaction) => {
   const rows = await PlanFeature.findAll({ where: { planId: plan.id }, transaction });
   const free = new Map();
   for (const row of rows) {
@@ -153,17 +177,25 @@ const writeFeatures = async (plan, titles, transaction) => {
     else await row.destroy({ transaction });
   }
 
-  for (const [index, title] of titles.entries()) {
-    const key = title.toLowerCase();
+  for (const [index, feature] of features.entries()) {
+    const key = feature.title.toLowerCase();
+    const moduleId = feature.moduleKey ? modulesByKey.get(feature.moduleKey).id : null;
     const row = free.get(key);
     if (row) {
       free.delete(key);
-      await row.update({ title, sortOrder: index }, { transaction });
+      await row.update({ title: feature.title, sortOrder: index, moduleId }, { transaction });
     } else {
-      await PlanFeature.create({ planId: plan.id, title, sortOrder: index }, { transaction });
+      await PlanFeature.create({ planId: plan.id, title: feature.title, sortOrder: index, moduleId }, { transaction });
     }
   }
   for (const row of free.values()) await row.destroy({ transaction });
+};
+
+// The plan's modules follow its feature links: core modules always, plus every module a feature links to.
+const modulesFromFeatures = async (modulesByKey, transaction) => {
+  const core = await AppModule.findAll({ where: { isCore: YES, status: MODULE_STATUS.ACTIVE }, transaction });
+  const byId = new Map([...core, ...modulesByKey.values()].map((module) => [String(module.id), module]));
+  return [...byId.values()];
 };
 
 // the plan ends up with exactly these modules
@@ -227,8 +259,10 @@ const show = async (uuid) => output(await load(uuid));
 const create = async (ctx, data) =>
   sequelize.transaction(async (transaction) => {
     const limits = parseLimits(data.limits);
-    const modules = await resolveModules(data.modules, transaction);
     const features = parseFeatures(data.features);
+    // with features the modules follow the feature links; the older `modules` list is used only when no features are sent
+    const featureModules = features ? await resolveFeatureModules(features, transaction) : new Map();
+    const modules = features ? await modulesFromFeatures(featureModules, transaction) : await resolveModules(data.modules, transaction);
 
     const plan = await Plan.create(
       {
@@ -252,7 +286,7 @@ const create = async (ctx, data) =>
     // every configured limit gets a row, so nothing is left unclear (empty = unlimited)
     await writeLimits(plan, Object.fromEntries(LIMIT_KEYS.map((key) => [key, limits[key] ?? null])), transaction);
     await writeModules(plan, modules, transaction);
-    if (features) await writeFeatures(plan, features, transaction);
+    if (features) await writeFeatures(plan, features, featureModules, transaction);
 
     const saved = await load(plan.uuid, transaction);
     await Audit.log(
@@ -265,7 +299,7 @@ const create = async (ctx, data) =>
   });
 
 // Draft: everything can change. Published: price, interval, tax and slug are locked (schools already pay for them);
-// features (text only) can always change; limits and modules may grow, and may shrink only while no school uses the plan. Archived: read only.
+// feature lines can always change (their module links rebuild the plan's modules; a module in use cannot be unlinked); limits and modules may grow, and may shrink only while no school uses the plan. Archived: read only.
 const update = async (ctx, uuid, data) =>
   sequelize.transaction(async (transaction) => {
     const plan = await load(uuid, transaction);
@@ -276,8 +310,15 @@ const update = async (ctx, uuid, data) =>
     }
 
     const limits = parseLimits(data.limits);
-    const modules = data.modules === undefined || data.modules === null ? null : await resolveModules(data.modules, transaction);
     const features = parseFeatures(data.features);
+    const featureModules = features ? await resolveFeatureModules(features, transaction) : new Map();
+    // with features the modules follow the feature links; the older `modules` list is used only when no features are sent
+    const modules = features
+      ? await modulesFromFeatures(featureModules, transaction)
+      : data.modules === undefined || data.modules === null
+        ? null
+        : await resolveModules(data.modules, transaction);
+    const moduleField = features ? 'features' : 'modules';
     const published = Number(plan.status) === PLAN_STATUS.PUBLISHED;
 
     if (published) {
@@ -299,7 +340,7 @@ const update = async (ctx, uuid, data) =>
         if (modules) {
           const keep = new Set(modules.map((module) => String(module.id)));
           if (includedModules(plan).some((row) => !keep.has(String(row.moduleId)))) {
-            throw AppError.validation({ modules: ['Schools are using this plan, so a module cannot be removed. Duplicate the plan instead.'] });
+            throw AppError.validation({ [moduleField]: ['Schools are using this plan, so a module cannot be removed (unlink it from the feature). Duplicate the plan instead.'] });
           }
         }
       }
@@ -320,7 +361,7 @@ const update = async (ctx, uuid, data) =>
     await plan.update(changes, { transaction });
     if (Object.keys(limits).length) await writeLimits(plan, limits, transaction);
     if (modules) await writeModules(plan, modules, transaction);
-    if (features) await writeFeatures(plan, features, transaction); // text only, so it may change on a published plan
+    if (features) await writeFeatures(plan, features, featureModules, transaction); // a published plan may change its feature lines; the modules follow their links
 
     const saved = await load(uuid, transaction);
     await Audit.log(
@@ -422,7 +463,8 @@ const duplicate = async (ctx, uuid) =>
 
     await writeLimits(copy, limitsOf(source), transaction);
     await writeModules(copy, includedModules(source).map((row) => row.module), transaction);
-    await writeFeatures(copy, featuresOf(source), transaction);
+    const sourceFeatures = featuresOf(source);
+    await writeFeatures(copy, sourceFeatures, await resolveFeatureModules(sourceFeatures, transaction), transaction);
 
     const saved = await load(copy.uuid, transaction);
     await Audit.log(

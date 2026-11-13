@@ -44,7 +44,10 @@ route -> middleware group -> (extra middleware) -> controller -> service -> mode
 - **Services** hold business logic.
 - **Models** talk to the database.
 
-## Subscriptions and entitlements (planned)
+## Subscriptions and entitlements
+- A school's effective access = its plan (core modules + `plan_modules` + `plan_limits`) plus per-school overrides (see 04-conventions.md, "Per-school overrides"), computed in `Services/V1/Common/Entitlements.js`.
+- Staff API (permission `schools.entitlements` for changes, `schools.view` to look), under `/api/v1/admin/schools/:uuid/entitlements`: `GET`; `PUT|DELETE /modules/:moduleUuid` (body `{ access: 'grant'|'revoke', reason }`); `PUT|DELETE /limits/:limitKey` (body `{ value: number|null, reason }`). Audit actions: `school.entitlement.module_granted|module_revoked|module_cleared|limit_set|limit_cleared`. `GET` returns `{ subscription, modules, limits, endedOverrides }` (limit `usage` is zero until the school-data modules exist).
+- Still to do (planned): the items below.
 - Tables for plans, plan entitlements (modules + limits), subscriptions, payments and webhook events.
 - Subscription state changes only on **verified, idempotent** payment webhooks.
 - Plan limits and enabled modules are enforced **in the backend** (middleware like `requireModule('fees')`), never only by hiding menus.

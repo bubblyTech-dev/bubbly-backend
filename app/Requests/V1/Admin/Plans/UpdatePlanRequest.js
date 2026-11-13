@@ -1,6 +1,6 @@
 const Request = require('@app/Requests/Request');
 
-// Send only what changed. `features` replaces the whole list (an empty list clears it). A published plan keeps its price and billing interval (see PlanService).
+// Send only what changed. `features` replaces the whole list (an empty list clears it); a line may be text or { title, moduleKey } and the plan's modules follow the links. A published plan keeps its price and billing interval (see PlanService).
 class UpdatePlanRequest extends Request {
   rules() {
     return {

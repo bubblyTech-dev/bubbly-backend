@@ -11,6 +11,7 @@ const adminPermissionGroups = {
     ['schools.status', 'Suspend, reactivate or archive a school'],
     ['schools.notes', 'Add internal notes'],
     ['schools.usage', 'View usage'],
+    ['schools.entitlements', "Change a school's modules and limits"],
     ['schools.delete', 'Delete a school'],
   ],
   support_access: [

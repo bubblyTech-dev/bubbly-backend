@@ -8,11 +8,11 @@ const limitsOf = (plan) => {
   return Object.fromEntries(plansConfig.limits.map(({ key }) => [key, stored.has(key) ? stored.get(key) : null]));
 };
 
-// the feature list in order: [{ uuid, title }]
+// the feature list in order: [{ uuid, title, moduleKey }]  (moduleKey is null when the line is text only)
 const featuresOf = (plan) =>
   [...(plan.features || [])]
     .sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id))
-    .map((row) => ({ uuid: row.uuid, title: row.title }));
+    .map((row) => ({ uuid: row.uuid, title: row.title, moduleKey: row.module ? row.module.moduleKey : null }));
 
 const modulesOf = (plan) =>
   (plan.planModules || [])

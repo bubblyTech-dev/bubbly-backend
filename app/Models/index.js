@@ -14,6 +14,8 @@ const PlanFeature = require('./PlanFeature');
 const Client = require('./Client');
 const ClientNote = require('./ClientNote');
 const ClientStatusHistory = require('./ClientStatusHistory');
+const ClientModule = require('./ClientModule');
+const ClientLimit = require('./ClientLimit');
 const Inquiry = require('./Inquiry');
 const InquiryNote = require('./InquiryNote');
 const Announcement = require('./Announcement');
@@ -61,6 +63,7 @@ PlanFeature.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
 Plan.hasMany(PlanModule, { foreignKey: 'planId', as: 'planModules' });
 PlanModule.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
 PlanModule.belongsTo(AppModule, { foreignKey: 'moduleId', as: 'module' });
+PlanFeature.belongsTo(AppModule, { foreignKey: 'moduleId', as: 'module' });
 AppModule.hasMany(PlanModule, { foreignKey: 'moduleId', as: 'planModules' });
 
 // schools (clients)
@@ -71,6 +74,11 @@ ClientNote.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'creator' });
 Client.hasMany(ClientStatusHistory, { foreignKey: 'clientId', as: 'statusHistory' });
 ClientStatusHistory.belongsTo(Client, { foreignKey: 'clientId', as: 'client' });
 ClientStatusHistory.belongsTo(AdminUser, { foreignKey: 'changedBy', as: 'changer' });
+
+// per-school overrides
+ClientModule.belongsTo(AppModule, { foreignKey: 'moduleId', as: 'module' });
+ClientModule.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'creator' });
+ClientLimit.belongsTo(AdminUser, { foreignKey: 'createdBy', as: 'creator' });
 
 // inquiries
 Inquiry.hasMany(InquiryNote, { foreignKey: 'inquiryId', as: 'notes' });
@@ -125,6 +133,8 @@ module.exports = {
   Client,
   ClientNote,
   ClientStatusHistory,
+  ClientModule,
+  ClientLimit,
   Inquiry,
   InquiryNote,
   Announcement,

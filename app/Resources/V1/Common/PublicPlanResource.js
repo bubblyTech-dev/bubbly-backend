@@ -23,6 +23,10 @@ class PublicPlanResource extends Resource {
       features: [...(plan.features || [])]
         .sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id))
         .map((row) => row.title),
+      // the same lines with the module each one unlocks (null = text only)
+      featureItems: [...(plan.features || [])]
+        .sort((a, b) => a.sortOrder - b.sortOrder || Number(a.id) - Number(b.id))
+        .map((row) => ({ title: row.title, moduleKey: row.module ? row.module.moduleKey : null })),
     };
   }
 }

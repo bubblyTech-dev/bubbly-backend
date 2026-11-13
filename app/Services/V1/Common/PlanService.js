@@ -1,4 +1,4 @@
-const { Plan, PlanFeature, PlanLimit } = require('@app/Models');
+const { AppModule, Plan, PlanFeature, PlanLimit } = require('@app/Models');
 const { PLAN_STATUS } = require('@app/Helpers/constants');
 const PublicPlanResource = require('@app/Resources/V1/Common/PublicPlanResource');
 
@@ -8,7 +8,7 @@ const listPublished = async () => {
     where: { status: PLAN_STATUS.PUBLISHED },
     include: [
       { model: PlanLimit, as: 'limits' },
-      { model: PlanFeature, as: 'features' },
+      { model: PlanFeature, as: 'features', include: [{ model: AppModule, as: 'module', attributes: ['moduleKey'] }] },
     ],
     order: [['sortOrder', 'ASC'], ['id', 'ASC']],
   });

@@ -2,7 +2,8 @@ const Request = require('@app/Requests/Request');
 
 // limits  { max_students: 100, max_teachers: null }   null means unlimited (keys are in config/plans.js)
 // modules ['<module uuid>', ...]                       core modules are always added by the server
-// features ['Unlimited attendance records', ...]       text lines for the pricing page (max 30, each 1-200 characters)
+// features ['Unlimited attendance records', { title: 'Fees', moduleKey: 'fees' }, ...]  a text line, or a line that also unlocks a module
+//          (core modules are always included; the plan's modules follow the links). Max 30, each 1-200 characters
 class StorePlanRequest extends Request {
   rules() {
     return {
