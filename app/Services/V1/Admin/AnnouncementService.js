@@ -93,7 +93,12 @@ const list = async (query) => {
     offset: (page - 1) * perPage,
   });
 
-  return AnnouncementResource.paginate({ rows, count, page, perPage });
+  // every row also carries who it is for (names, for the list's tooltip)
+  const targets = await TargetResolver.describeMany(rows);
+  return {
+    data: rows.map((row) => AnnouncementResource.make(row, { targets: targets.get(String(row.id)) || [] })),
+    meta: { page, perPage, total: count, lastPage: Math.max(1, Math.ceil(count / perPage)) },
+  };
 };
 
 const show = async (uuid) => detail(await findOrFail(uuid, { include: [creatorInclude] }));
@@ -288,8 +293,9 @@ const remove = async (ctx, uuid) => {
   });
 };
 
-// What schools should show right now. Only announcements for ALL schools are returned until school login exists;
-// per-school and per-plan targeting is applied then, using the logged-in school.
+// What the public endpoint (no login) returns: only announcements for ALL schools, because it cannot know which
+// school is asking. Announcements aimed at selected schools or plans are served to the school app by the
+// authenticated /user endpoint later, which filters by the logged-in school and its plan.
 const active = async () => {
   const now = new Date();
 
@@ -308,4 +314,6 @@ const active = async () => {
   return PublicAnnouncementResource.collection(rows);
 };
 
-module.exports = { list, show, create, update, publish, unpublish, remove, active };
+const targetOptions = ({ targetType, search }) => TargetResolver.options(Number(targetType), search);
+
+module.exports = { list, show, create, update, publish, unpublish, remove, active, targetOptions };

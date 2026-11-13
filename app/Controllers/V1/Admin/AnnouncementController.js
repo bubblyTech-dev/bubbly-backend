@@ -11,6 +11,11 @@ const AnnouncementController = {
     return Response.success(res, { data, meta });
   },
 
+  // the schools or plans that can be picked as the audience
+  async targetOptions(req, res) {
+    return Response.success(res, { data: await AnnouncementService.targetOptions(req.validated) });
+  },
+
   async show(req, res) {
     return Response.success(res, { data: await AnnouncementService.show(req.params.uuid) });
   },

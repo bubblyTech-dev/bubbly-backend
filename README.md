@@ -170,6 +170,7 @@ Base URL: `http://localhost:3000/api`
 | POST | `/v1/user/auth/change-password` | Change own password | Working once migrations are run |
 | GET | `/v1/user/subscription` | The school's own plan and status (Principal) | Working once migrations are run |
 | POST | `/v1/admin/auth/login`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | Admin sign-in flow | Working |
+| GET | `/v1/admin/announcements/target-options?targetType=2\|3&search=` | Schools or plans to pick as an announcement audience | Working |
 | GET | `/v1/admin/auth/me` | Logged-in admin | Working |
 | POST | `/v1/admin/auth/change-password` | Change own password | Working |
 | PATCH | `/v1/admin/profile` | Update own name, phone and photo | Working |
@@ -230,7 +231,6 @@ Base URL: `http://localhost:3000/api`
 | PATCH | `/v1/admin/inquiries/:uuid/status`, `/inquiries/:uuid/assign` | Change status, assign or unassign | Working |
 | GET, POST | `/v1/admin/inquiries/:uuid/notes` | Internal notes | Working |
 | DELETE | `/v1/admin/inquiries/:uuid` | Delete a Resolved or Spam inquiry (soft delete) | Working |
-| GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
 
 Unknown routes return `404` with `{ "message": "Route not found: ..." }`.
 

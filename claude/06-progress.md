@@ -19,7 +19,7 @@ _Update this file whenever something is finished, started or decided._
 - Route structure with an `index.js` at the top and in each folder
 - Import aliases (`@app`, `@config`, `@routes`, `@database`)
 - Placeholder `AuthController` with a logging `login` in Admin and User
-- Middleware groups (`public`, `admin`, `user`) with placeholder middleware, plus temporary `ping` demo routes
+- Middleware groups (`public`, `admin`, `user`) with placeholder middleware, (the temporary `ping` demo routes were removed)
 - `/api/health` endpoint
 - Support Inquiries backend (public form, admin inbox, notes, assignment, counts)
 - Root `README.md` for new developers
@@ -52,6 +52,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 | 2026-11-10 | Plan features: `plan_features` table and model, `features` on plan create and update, in the admin and public plan responses; Admin plan form shows an Add feature popup instead of the module checklist |
 | 2026-11-10 | Payment webhook: `POST /api/webhooks/payment` (raw body, signature, idempotent ingest), handlers for subscription, payment and refund events, payment records, GST invoices with a per-year gapless counter (`invoice_counters`, migration 000260), activation hook, dev-only replay, Billing admin API (webhook events, payments, invoices) |
 | 2026-11-10 | Razorpay gateway layer: `RazorpayService`, plan sync on publish, customer and subscription creation, cancel at period end, sync, new billing settings, tables for subscriptions, payments, invoices and webhook events |
+| 2026-11-11 | Removed the temporary `ping` routes; announcements can now be aimed at selected schools or plans (`GET /admin/announcements/target-options`, list rows carry their target names); the public active endpoint still serves only all-schools announcements |
 | 2026-10-25 | Users & Access module: `AdminUserService`, `AuditLogService`, `Audit` and pagination helpers, `array` and `date` rules, `audit_logs` migration and model (extra `description` column), Admin app Users list/detail/permissions/sessions/login history and Audit Log pages |
 | 2026-10-25 | Plans & Modules: migrations 000110-000113, modules seeder, `PlanService`, `ModuleService`, `PlanUsage`, public plan list |
 | 2026-10-25 | Platform Settings: `platform_settings` migration and model, `config/settings.js`, `Settings` helper with cache, `GET/PUT /admin/settings`, seeder for default keys (migration 000150, seeder 000351) |
