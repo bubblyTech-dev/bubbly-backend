@@ -25,6 +25,7 @@ router.use('/renewals', require('./renewals'));
 router.use('/payments', require('./offlinePayments')); // record an offline payment (matched before the billing router)
 router.use(require('./billing')); // webhook events, payments and invoices
 router.use('/inquiries', require('./inquiries'));
+router.use('/dashboard', require('./dashboard'));
 router.use('/analytics', require('./analytics'));
 router.use('/reports', require('./reports'));
 // development helpers (the webhook replay): never available in production
