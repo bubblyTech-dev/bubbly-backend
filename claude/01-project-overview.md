@@ -42,11 +42,21 @@ Subscription states: `pending`, `active`, `past_due`, `cancelled`, `expired`, `s
 ## Out of scope for Phase 1
 Native mobile apps, parent portal, transport, library, payroll, inventory, biometric attendance, multi-branch, exams and report cards, parent online fee payment, free trials, coupons, proration, plan switching, automated dunning, email/SMS/WhatsApp.
 
+## Decisions made (2026-10-25)
+- **Payment gateway:** Razorpay only. India project: INR, GST.
+- **Domain:** one domain for the public site and the School app. Per-school subdomains may come later.
+- **Grace period, suspension and retention rules:** not hard-coded; they are editable settings in the Admin app.
+- **Admissions, fee receipts and CSV export:** included in Phase 1.
+- **Added to Phase 1:** child progress reports (skills and term remarks), daily diary (meals, naps, mood, photos), year-end promotion (move all students to the next class and academic year), fee extras (installments, late fee, sibling discount, scholarships, dues reminders), staff extras (attendance, leave balance, duty roster, substitute teacher).
+- **Other preschool extras** (pickup log, health records and similar): tables reserved, decided while building.
+- **Admin accounts:** no 2FA. Login history and a session list are kept. A seeder creates one master admin (always has every permission) and one sub admin (starts with no permissions).
+- **Users & Access module (Admin app):** lists admin staff only (school users live inside each school's detail page, plus a global search for support). Anyone who holds the right permissions can add staff with a password and tick permissions in a checklist grouped by module; managing permissions is itself a permission. There are no fixed roles for admin staff. Guards: nobody can grant a permission they do not have, nobody can edit their own permissions, and the master account cannot be edited, deactivated or password-reset by anyone else.
+- **Audit log:** kept for every user and every admin. The master admin's own actions are logged too, but are visible only to the master admin.
+- **Google sign-in (planned):** through Firebase for school users; the backend verifies the Firebase token and then issues its own session.
+
 ## Open decisions
-- Payment gateway, country and currency
-- Plan names, prices, billing intervals, taxes and limits
-- Grace period, suspension and data-retention policy after failed payment or cancellation
+- Plan names, prices, billing intervals and limits
+- How a school user is identified at login on a single domain (school code, school picker, or globally unique email)
 - Student accounts: yes or no
 - Who creates teacher and student accounts; is CSV import needed
-- Admissions, fee receipts and report exports in Phase 1?
 - Production hosting details and expected volumes

@@ -10,6 +10,7 @@ Project notes for everyone working on the **Bubbly backend**: a multi-tenant Sch
 | [04-conventions.md](04-conventions.md) | How we write code here: routes, middleware groups, aliases, validation, naming |
 | [05-setup.md](05-setup.md) | Run the project locally, npm scripts |
 | [06-progress.md](06-progress.md) | Done / next / open decisions / change log |
+| [07-analytics-and-reports.md](07-analytics-and-reports.md) | The Analytics and Reports framework: how to add a dataset, a report and their Admin pages |
 
 ## Rules for these docs
 1. **Keep them current.** Whenever a plan, decision, folder, convention or command changes, update the matching file in the same change (and add a line to the change log in `06-progress.md`).

@@ -40,17 +40,17 @@
  | the array, in the position it should run.
  */
 const authenticate = require('./authenticate');
-const requireAdmin = require('./requireAdmin');
+const authenticateAdmin = require('./authenticateAdmin');
 const resolveClient = require('./resolveClient');
 const checkSubscription = require('./checkSubscription');
 const rateLimit = require('./rateLimit');
 
 const groups = {
   // Common routes (plans, signup, contact, webhooks)
-  public: [rateLimit],
+  public: [rateLimit()],
 
   // /api/v1/admin/*  (Super Admin and platform staff)
-  admin: [authenticate, requireAdmin],
+  admin: [authenticateAdmin],
 
   // /api/v1/user/*  (principal, teacher, student)
   user: [authenticate, resolveClient, checkSubscription],

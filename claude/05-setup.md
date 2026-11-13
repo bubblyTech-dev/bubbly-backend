@@ -22,10 +22,7 @@ DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 Never commit `.env`.
 
 ## What you should see on `npm run dev`
-- A header with the app name and environment.
-- A `✔` line for every app file loaded, and a count per folder.
 - `Database connected (<db> @ <host>:<port>)`, or a clear error and the server stops if Postgres is unreachable.
-- A `✔` line for every route file and its URL.
 - `Server ready` with the health URL.
 
 If a file is broken you get a `✖` line with the file and error, and the server stops.
@@ -53,3 +50,5 @@ npx sequelize-cli seed:generate --name default-plans
 
 ## Dependencies policy
 Add packages deliberately and one at a time (npm supply-chain attacks are active in 2026). Commit the lockfile, install with `npm ci` in CI/deploy, and run `npm audit` now and then. Known: `npm audit` reports 2 moderate `uuid` warnings inside Sequelize 6; the suggested fix downgrades Sequelize to v3, so do **not** run `npm audit fix --force`.
+
+`multer` is pinned to 2.5.0 on purpose: every older version has known denial-of-service advisories. It is only a few days old, so re-check `npm audit` when updating.

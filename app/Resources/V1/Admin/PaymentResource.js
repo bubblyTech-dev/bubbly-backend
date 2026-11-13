@@ -1,0 +1,40 @@
+const Resource = require('@app/Resources/Resource');
+
+// A payment reported by Razorpay, or an offline payment recorded by staff. Money is in paise. The raw gateway object is only included for the detail view.
+class PaymentResource extends Resource {
+  toArray() {
+    const payment = this.resource;
+
+    return {
+      uuid: payment.uuid,
+      status: Number(payment.status),
+      source: Number(payment.source) || 1, // 1: Razorpay, 2: Offline
+      client: this.when(payment.client, () => ({ uuid: payment.client.uuid, name: payment.client.name })),
+      subscriptionUuid: this.when(payment.subscription, () => payment.subscription.uuid),
+      razorpayPaymentId: payment.razorpayPaymentId,
+      razorpayOrderId: payment.razorpayOrderId,
+      razorpayInvoiceId: payment.razorpayInvoiceId,
+      razorpayRefundId: payment.razorpayRefundId,
+      method: payment.method,
+      amountPaise: Number(payment.amountPaise),
+      currency: payment.currency,
+      feePaise: payment.feePaise === null ? null : Number(payment.feePaise),
+      taxPaise: payment.taxPaise === null ? null : Number(payment.taxPaise),
+      refundedPaise: Number(payment.refundedPaise) || 0,
+      refundablePaise: [3, 6].includes(Number(payment.status))
+        ? Math.max(0, Number(payment.amountPaise) - (Number(payment.refundedPaise) || 0))
+        : 0,
+      offline: !payment.razorpayPaymentId, // no Razorpay payment id: recorded by staff, a refund is only recorded
+      failureCode: payment.failureCode,
+      failureReason: payment.failureReason,
+      reference: payment.reference,
+      notes: payment.notes,
+      recordedBy: this.when(payment.recorder, () => payment.recorder.name || payment.recorder.email),
+      paidAt: payment.paidAt,
+      createdAt: payment.createdAt,
+      gatewayData: this.when(this.extra.withGateway, () => payment.gatewayData),
+    };
+  }
+}
+
+module.exports = PaymentResource;

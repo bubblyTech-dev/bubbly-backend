@@ -69,7 +69,7 @@ npm run dev
 ```
 
 ### Verify it works
-The terminal prints each loaded file and route, then:
+The terminal prints:
 ```
 ✔ Database connected  (bubbly @ 127.0.0.1:5432, user: postgres)
 Server ready
@@ -138,7 +138,7 @@ Laravel-style, flat under `app/`. Folder names are **case-sensitive** (the serve
 │   ├── Middleware/           # authenticate, resolveClient, groups.js, ...
 │   ├── Models/               # Sequelize models
 │   ├── Jobs/  Mail/  Providers/
-│   └── Helpers/              # logger, autoload, database
+│   └── Helpers/              # logger, database
 ├── config/                   # app.js, database.js
 ├── database/                 # create.js, migrations/, seeders/
 ├── routes/
@@ -165,9 +165,75 @@ Base URL: `http://localhost:3000/api`
 | Method | Path | Description | Status |
 |---|---|---|---|
 | GET | `/health` | Health check | Working |
-| POST | `/v1/admin/auth/login` | Super Admin login | Placeholder (logs only) |
-| POST | `/v1/user/auth/login` | Principal / teacher / student login | Placeholder (logs only) |
-| GET | `/v1/{admin,user,common}/ping`, `/ping-extra`; `GET /v1/user/ping-solo` | Middleware order demos | **Temporary**, to be removed |
+| POST | `/v1/user/auth/login`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | School sign-in flow (Principal, Teacher, Student) | Working once migrations 240-243 are run |
+| GET | `/v1/user/auth/me` | Logged-in school user, school, subscription, modules, permissions | Working once migrations are run |
+| POST | `/v1/user/auth/change-password` | Change own password | Working once migrations are run |
+| GET | `/v1/user/subscription` | The school's own plan and status (Principal) | Working once migrations are run |
+| POST | `/v1/admin/auth/login`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | Admin sign-in flow | Working |
+| GET | `/v1/admin/announcements/target-options?targetType=2\|3&search=` | Schools or plans to pick as an announcement audience | Working |
+| GET | `/v1/admin/auth/me` | Logged-in admin | Working |
+| POST | `/v1/admin/auth/change-password` | Change own password | Working |
+| PATCH | `/v1/admin/profile` | Update own name, phone and photo | Working |
+| GET, POST | `/v1/admin/users` | List (search, status, page) and add staff | Working |
+| GET, PATCH, DELETE | `/v1/admin/users/:uuid` | One staff member, edit, remove | Working |
+| PATCH | `/v1/admin/users/:uuid/status` | Activate or deactivate | Working |
+| POST | `/v1/admin/users/:uuid/reset-password` | Set a new password for staff | Working |
+| PUT | `/v1/admin/users/:uuid/permissions` | Replace a staff member's permissions | Working |
+| GET, DELETE | `/v1/admin/users/:uuid/sessions` (and `/:sessionUuid`) | List or end sessions | Working |
+| GET | `/v1/admin/users/:uuid/login-history` | Logins of a staff member | Working |
+| GET | `/v1/admin/permissions` | Permission checklist grouped by module | Working |
+| GET | `/v1/admin/audit-logs` | Audit log (search, action, entityType, from, to, page) | Working |
+| GET | `/v1/admin/files/rules?type=` | Allowed extensions and size for a file type | Working |
+| GET | `/v1/admin/announcements`, `/:uuid` | List and read announcements | Working |
+| POST | `/v1/admin/announcements` | Create a draft announcement | Working |
+| PATCH | `/v1/admin/announcements/:uuid` | Edit (Published: end time only) | Working |
+| POST | `/v1/admin/announcements/:uuid/publish`, `/unpublish` | Publish or take back to draft | Working |
+| DELETE | `/v1/admin/announcements/:uuid` | Soft delete | Working |
+| GET | `/v1/common/announcements/active` | What schools should show now (public) | Working |
+| POST | `/v1/admin/files/upload?type=` | Upload one file to temp (field `file`) | Working |
+| GET | `/v1/admin/plans`, `/v1/admin/plans/options`, `/v1/admin/plans/:uuid` | List, form options, one plan | Working |
+| POST / PATCH / DELETE | `/v1/admin/plans`, `/v1/admin/plans/:uuid` | Create, edit (price locked once published; `features` is the plan's text list), delete a draft | Working |
+| POST | `/v1/admin/plans/:uuid/publish`, `/archive`, `/duplicate` | Plan lifecycle (publish also creates the plan on Razorpay when keys are set) | Working |
+| POST | `/v1/admin/plans/:uuid/sync-gateway` | Create a published plan on Razorpay (retry or first sync) | Working |
+| GET / POST | `/v1/admin/schools/:uuid/subscriptions` | List a school's subscriptions, create one through Razorpay (Pending until the webhook) | Working |
+| GET | `/v1/admin/subscriptions`, `/v1/admin/subscriptions/:uuid` | All subscriptions, one subscription | Working |
+| POST | `/v1/admin/subscriptions/:uuid/cancel`, `/sync` | Cancel at the end of the period, refresh from Razorpay | Working |
+| GET | `/v1/admin/dashboard?preset=` | The main dashboard: KPIs, charts, needs-attention list and panels, each block only if the admin holds its source permission (`dashboard.view` plus `schools.view`, `subscriptions.view`, `billing.view`, `renewals.view`, `inquiries.view`, `audit.view`, `announcements.view`) | Working |
+| GET | `/v1/admin/analytics/meta`, `/v1/admin/analytics`, `/v1/admin/analytics/:key?preset=&from=&to=&compare=&plan=&status=&source=&format=` | Analytics datasets, filter options; `format=csv\|xlsx` downloads (needs `reports.export`) | Working |
+| GET | `/v1/admin/reports`, `/v1/admin/reports/:key?preset=&from=&to=&page=&perPage=&format=` | Report catalogue, a report preview with filters, CSV or Excel download | Working |
+| GET | `/v1/admin/renewals/counts`, `/v1/admin/renewals?tab=` | Renewals: due soon, payment failed, in grace, suspended (with counts and the money due soon) | Working |
+| POST | `/webhooks/payment` | Razorpay webhook (raw body, signature checked, duplicates ignored). Not versioned | Working |
+| GET | `/v1/admin/webhook-events`, `/:uuid` | Stored webhook calls with their payload | Working |
+| POST | `/v1/admin/webhook-events/:uuid/reprocess` | Run a failed event again | Working |
+| GET | `/v1/admin/payments`, `/:uuid` | Payments (Razorpay and offline), filter by `source`, search by reference | Working |
+| GET | `/v1/admin/payments/offline-options` | Offline payment methods (from Settings) | Working |
+| POST | `/v1/admin/payments/offline` | Record a payment received outside Razorpay (school, plan, amount, method, valid until) | Working |
+| POST | `/v1/admin/subscriptions/:uuid/expiry` | Change the valid-until date of an offline subscription | Working |
+| GET | `/v1/admin/invoices`, `/:uuid` | Our GST invoices | Working |
+| GET | `/v1/admin/invoices/:uuid/pdf` | Download an invoice as a PDF | Working |
+| GET | `/v1/admin/payments/refund-options` | Refund reasons from Settings | Working |
+| POST | `/v1/admin/payments/:uuid/refund` | Refund a payment (full or partial, optionally cancel the subscription at period end) | Working |
+| POST | `/v1/admin/dev/webhook-replay` | Replay a captured webhook (development only, master admin, absent in production) | Working |
+| GET / PATCH | `/v1/admin/modules`, `/v1/admin/modules/:uuid` | List and edit modules | Working |
+| GET | `/v1/common/plans` | Published plans with their `features` for the pricing page (public) | Working |
+| GET | `/v1/admin/settings` | Platform settings grouped, with current values | Working |
+| PUT | `/v1/admin/settings/:group` | Save one group of settings | Working |
+| GET | `/files/:type/:name` | Serve a stored file (signed link for private types) | Working |
+| GET | `/v1/admin/schools/:uuid/principal` | The school's Principal login (name, email, password set or not) | Working |
+| POST | `/v1/admin/schools/:uuid/principal/resend-welcome`, `/reset-password` | New set-password link (shown once); reset also signs the Principal out | Working |
+| GET | `/v1/admin/notifications` | Items for the header bell (new inquiries, failed payments) with the unread count | Working |
+| POST | `/v1/admin/notifications/seen` | Mark the bell as read for the current admin | Working |
+| GET, POST | `/v1/admin/schools` | List and add schools | Working |
+| GET, PATCH, DELETE | `/v1/admin/schools/:uuid` | View, edit, delete (archived only) | Working |
+| POST | `/v1/admin/schools/:uuid/status` | Suspend, reactivate or archive (reason required) | Working |
+| GET | `/v1/admin/schools/:uuid/status-history` | Status changes of a school | Working |
+| GET, POST | `/v1/admin/schools/:uuid/notes` | Internal notes | Working |
+| GET | `/v1/admin/schools/:uuid/usage` | Usage counters (zeros until school data exists) | Working |
+| POST | `/v1/common/inquiries` | Public contact / demo form (5 per 15 min per address, honeypot field `website`) | Working |
+| GET | `/v1/admin/inquiries`, `/inquiries/counts`, `/inquiries/assignees`, `/inquiries/:uuid` | List, totals, staff to assign, one inquiry | Working |
+| PATCH | `/v1/admin/inquiries/:uuid/status`, `/inquiries/:uuid/assign` | Change status, assign or unassign | Working |
+| GET, POST | `/v1/admin/inquiries/:uuid/notes` | Internal notes | Working |
+| DELETE | `/v1/admin/inquiries/:uuid` | Delete a Resolved or Spam inquiry (soft delete) | Working |
 
 Unknown routes return `404` with `{ "message": "Route not found: ..." }`.
 
@@ -258,7 +324,8 @@ Detailed team docs live in [`claude/`](claude/README.md):
 - [ ] Base model with `client_id` scope; first migrations (clients, users, roles, permissions, plans, subscriptions)
 - [ ] JWT authentication for Admin and User
 - [ ] Seeders (roles, permissions, plans, first Super Admin)
-- [ ] Public signup, checkout and payment webhooks
+- [x] Payment webhook, payments and GST invoices
+- [ ] Public signup and checkout
 - [ ] School modules: students, teachers, classes, attendance, homework, timetable, leave, fees, announcements
 - [ ] Audit logs, backups, deployment
 

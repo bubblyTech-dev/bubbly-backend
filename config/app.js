@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 module.exports = {
   name: process.env.APP_NAME || 'Bubbly',
