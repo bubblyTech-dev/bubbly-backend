@@ -3,6 +3,7 @@
 _Update this file whenever something is finished, started or decided._
 
 ## Done
+- Analytics pages: Schools, Subscriptions, Revenue (without GST, MRR estimate), Payments health
 - Analytics and Reports foundation (backend + Admin app): date ranges with an Indian financial year setting, CSV and Excel export with an audit entry, auto-loaded dataset and report registries, `GET /admin/analytics[/meta|/:key]`, `GET /admin/reports[/:key]`, global filter bar and Export menu, reference dataset `schools.growth` and report `schools.directory`; no migrations; framework documented in `07-analytics-and-reports.md`
 - Invoice PDF download and payment refunds (backend + Admin app): `GET /admin/invoices/:uuid/pdf`, `POST /admin/payments/:uuid/refund`, refund reasons from Settings; no migrations
 - Principal tools (resend welcome link, reset password), notification bell (`GET /admin/notifications`, `POST /admin/notifications/seen`) and billing emails (receipt, payment failed) with the Admin app UI; migration `20261025000340-add-last-seen-notifications-to-admin-users.js` written, to be run
@@ -46,6 +47,7 @@ See the list in [01-project-overview.md](01-project-overview.md#open-decisions).
 ## Change log
 | Date | Change |
 |---|---|
+| 2026-11-12 | Analytics pages Schools, Subscriptions, Revenue and Payments health: datasets `schools.growth`, `subscriptions.overview`, `revenue.overview`, `payments.health` (rules written at the top of each file), shared SQL helper `Analytics/helpers/billingSql.js` |
 | 2026-11-10 | Renewals: `GET /admin/renewals` and `/counts` (due soon, payment failed, in grace, suspended; days from Settings), `subscriptions.past_due_since` kept by a model hook (migration 000280). New settings keys and the `text` and `stringList` setting types (offline payment methods, refund reasons, invoice footer and terms, due-soon window, payment-failed message id, notification switches) with a Notifications group |
 | 2026-11-10 | Offline payments: record a payment received outside Razorpay with an admin-chosen valid-until date, offline subscriptions (`source` columns, migration 000320), shared GST invoice numbering, change expiry date, hourly `SubscriptionExpiryJob` (Past due, Suspended, Expired from the grace settings) |
 | 2026-11-10 | Principal tools, notification bell and billing emails: `PrincipalService`, `NotificationService`, `BillingMailer`, webhook mail hooks, migration 000340 |
