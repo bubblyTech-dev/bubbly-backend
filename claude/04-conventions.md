@@ -181,3 +181,9 @@ Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs,
 - The Renewals page (`GET /api/v1/admin/renewals/counts` and `GET /api/v1/admin/renewals?tab=`, permission `renewals.view`) shows four lists. All days come from Settings, none are in code: **due_soon** = Active and the next charge (or the end of the period when no charge is planned) is within `renewals.due_soon_days` or already passed; **payment_failed** = Past due; **in_grace** = Past due and still inside `policy.grace_days`, counted from `subscriptions.past_due_since`; **suspended** = Suspended.
 - The lists use only the status and the dates, so they work for Razorpay subscriptions and for offline ones (no Razorpay ids) alike. `source` in a row is 1 for Razorpay and 2 for offline.
 - `subscriptions.past_due_since` is kept by a `beforeSave` hook on the `Subscription` model: set when the status becomes Past due, cleared when it changes to anything else. Webhook handlers and manual syncs therefore need no extra code. Older Past due rows are filled from `updated_at` by the migration.
+
+## Analytics and reports
+- New datasets and reports are added as files in `Analytics/definitions` and `Reports/definitions`; nothing shared is edited (full guide: `07-analytics-and-reports.md`).
+- Money is in paise in every response; time is India time; SQL is parameterised; integer codes become words through `optionSets`.
+- Downloads go through `ExportService` only: CSV with a BOM, Excel with typed cells, a formula-injection guard on text, a row cap from the `reports.max_export_rows` setting, and an audit entry `report.exported`.
+- Query filters are comma separated lists (`plan=a,b`); Express 5 does not parse `plan[]=a`.

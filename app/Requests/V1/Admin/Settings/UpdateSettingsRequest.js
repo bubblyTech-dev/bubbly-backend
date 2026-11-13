@@ -32,6 +32,7 @@ const convert = (definition, raw) => {
       const text = (raw || '').trim();
       if (text.length > (definition.maxLength || 200)) return { error: `This must not be longer than ${definition.maxLength || 200} characters.` };
       if (text && definition.format === 'email' && !EMAIL_PATTERN.test(text)) return { error: 'This must be a valid email address.' };
+      if (text && Array.isArray(definition.allowed) && !definition.allowed.includes(text)) return { error: `Choose one of: ${definition.allowed.join(', ')}.` };
       return { value: text };
     }
 

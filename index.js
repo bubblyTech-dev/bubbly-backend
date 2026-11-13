@@ -22,6 +22,7 @@ app.use(
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Disposition'], // lets the Admin app read the file name of a CSV / Excel download
     maxAge: 600,
   }),
 );
