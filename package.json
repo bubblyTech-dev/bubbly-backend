@@ -12,6 +12,7 @@
     "migration:status": "sequelize-cli db:migrate:status",
     "seeder": "sequelize-cli db:seed:all",
     "seeder:undo": "sequelize-cli db:seed:undo:all",
+    "seed:demo": "node database/demo.js",
     "setup": "npm run db:create && npm run migration && npm run seeder"
   },
   "type": "commonjs",

@@ -29,6 +29,10 @@ const Payment = require('./Payment');
 const Invoice = require('./Invoice');
 const WebhookEvent = require('./WebhookEvent');
 const InvoiceCounter = require('./InvoiceCounter');
+const SchoolClass = require('./SchoolClass');
+const TeacherProfile = require('./TeacherProfile');
+const Student = require('./Student');
+const StaffAttendance = require('./StaffAttendance');
 
 // relationships (the database columns are plain indexed foreign keys; these are for loading related rows)
 
@@ -116,6 +120,18 @@ UserPasswordReset.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(UserLoginHistory, { foreignKey: 'userId', as: 'loginHistory' });
 UserLoginHistory.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// school records: classes, teachers (User + TeacherProfile), students and staff attendance
+SchoolClass.belongsTo(User, { foreignKey: 'classTeacherId', as: 'classTeacher' });
+User.hasMany(SchoolClass, { foreignKey: 'classTeacherId', as: 'classesTaught' });
+User.hasOne(TeacherProfile, { foreignKey: 'userId', as: 'teacherProfile' });
+TeacherProfile.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+SchoolClass.hasMany(Student, { foreignKey: 'classId', as: 'students' });
+Student.belongsTo(SchoolClass, { foreignKey: 'classId', as: 'schoolClass' });
+Student.belongsTo(User, { foreignKey: 'userId', as: 'login' });
+User.hasOne(Student, { foreignKey: 'userId', as: 'student' });
+User.hasMany(StaffAttendance, { foreignKey: 'userId', as: 'staffAttendance' });
+StaffAttendance.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 module.exports = {
   AdminUser,
   AdminPermission,
@@ -148,4 +164,8 @@ module.exports = {
   UserPasswordReset,
   UserLoginHistory,
   InvoiceCounter,
+  SchoolClass,
+  TeacherProfile,
+  Student,
+  StaffAttendance,
 };

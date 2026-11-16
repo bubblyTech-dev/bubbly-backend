@@ -16,6 +16,7 @@ npm start                 # start with node
 npm run setup             # create DB if missing + migrate + seed (safe to repeat)
 npm run migration         # run pending migrations (also :undo, :status)
 npm run seeder            # run all seeders (also seeder:undo)
+npm run seed:demo         # dev only: demo school + Principal/Teacher/Parent logins
 npx sequelize-cli migration:generate --name create-clients-table
 npx sequelize-cli seed:generate --name default-plans
 curl http://localhost:3000/api/health

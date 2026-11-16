@@ -16,6 +16,7 @@ const permissionLabels = {
   'attendance.mark': 'Mark attendance for assigned classes',
   'attendance.view': 'View attendance',
   'attendance.correct': 'Correct attendance records',
+  'staff_attendance.mark': 'Mark daily attendance of teachers and staff',
   'homework.manage': 'Create homework and review submissions',
   'homework.view': 'View homework',
   'timetable.view': 'View the timetable',

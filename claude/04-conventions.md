@@ -189,3 +189,16 @@ Public endpoints in `routes/V1/Common` use a strict `rateLimit({ name, windowMs,
 - Money is in paise in every response; time is India time; SQL is parameterised; integer codes become words through `optionSets`.
 - Downloads go through `ExportService` only: CSV with a BOM, Excel with typed cells, a formula-injection guard on text, a row cap from the `reports.max_export_rows` setting, and an audit entry `report.exported`.
 - Query filters are comma separated lists (`plan=a,b`); Express 5 does not parse `plan[]=a`.
+
+## School workspace API (`/api/v1/user/*`, Phase A)
+- Every route sits behind the `user` group (authenticate, resolveClient, checkSubscription) and a `requirePermission` key from `config/schoolPermissions.js`. Controllers build `School.ctx(req)` (`app/Helpers/school.js`: `{ user, client, access, ip, userAgent }`) and pass it to the service; services never read the request.
+- **Classes** (`classes`, model `SchoolClass` because `Class` is a keyword): one class teacher (`class_teacher_id`). Name unique per school (case-insensitive, in code). Archive only when no active students; delete only when the class never had students (otherwise 409 `CLASS_HAS_STUDENTS`).
+- **Teachers** = a `users` row (role 2) for the login + one `teacher_profiles` row for work details. The teacher's `uuid` is the user's uuid. `classUuids` on create/update replaces the classes the teacher is class teacher of. Deactivating signs them out and frees their classes.
+- **Students** (`students`) exist without a login. The parent app signs in with a `users` row of role 3 (Student) linked by `students.user_id`; its email is `guardian_email` and is unique across all schools (`UserDirectory`). Changing the guardian email moves the login email too. Marking a student Inactive or Left switches the login off and signs it out; deleting a student soft-deletes the login.
+- **Welcome / set-password links** for new teachers and parents come from `Services/V1/Common/UserInviter.js` (older unused links expire, mail after commit). The link is returned ONCE as `setPasswordUrl` so the Principal can share it while email is not set up; it is never stored or audited.
+- **Teacher scoping:** a Teacher only sees classes where they are class teacher and the students of those classes (read only); anything else answers 404.
+- **Plan limits** (`max_students`, `max_teachers`, `max_classes` from `access.limits`, null = unlimited) are checked on create and on re-activation: 403 `PLAN_LIMIT_REACHED`.
+- **Staff attendance** (`staff_attendance`): one row per person per day (kept in code); `PUT /user/teachers/:uuid/attendance` marks or changes it (no future dates, school time zone). Changing an earlier mark is audit logged as `staff_attendance.corrected`.
+- **Audit:** `Audit.log({ user: req.user, ip, userAgent }, ...)` records a school user as the actor and the school as `client_id`.
+- **Sections of later phases** in `GET /user/dashboard/principal` (`newInquiries`, `pendingLeaveRequests`, `studentAttendanceToday`, `feeCollection`) are `null` until their module exists; the web app hides them.
+- **Demo data:** `npm run seed:demo` (refuses in production) adds a school with an active offline subscription, 4 classes, 4 teachers, 8 students and logins for every role (printed at the end).

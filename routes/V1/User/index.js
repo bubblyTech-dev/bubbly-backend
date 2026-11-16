@@ -8,6 +8,12 @@ router.use('/auth', require('./auth'));
 
 router.use(groups.user);
 router.use('/subscription', require('./subscription'));
-// add one file per feature below, e.g. router.use('/students', require('./student'));
+router.use('/dashboard', require('./dashboard'));
+router.use('/school', require('./school'));
+router.use('/profile', require('./profile'));
+router.use('/classes', require('./classes'));
+router.use('/students', require('./students'));
+router.use('/teachers', require('./teachers'));
+// add one file per feature below
 
 module.exports = router;

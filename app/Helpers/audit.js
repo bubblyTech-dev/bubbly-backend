@@ -6,6 +6,8 @@ const { AUDIT_ACTOR, NO, YES } = require('@app/Helpers/constants');
 //
 //   await Audit.log(
 //     { admin: req.admin, ip, userAgent },                    // who and from where (see clientInfo in Helpers/http.js)
+//                                                             // a school user instead: { user: req.user, ip, userAgent }
+//                                                             // (the row then carries the user's school by default)
 //     'admin_user.created',                                   // what
 //     { entityType: 'admin_user', entityUuid, description, before, after },
 //     { transaction },
@@ -23,16 +25,23 @@ const pick = (source, fields) => {
   return output;
 };
 
-const log = async ({ admin, ip, userAgent } = {}, action, details = {}, options = {}) => {
+const actorOf = (admin, user) => {
+  if (admin) return { type: AUDIT_ACTOR.ADMIN, id: admin.id, name: admin.name || admin.email, isMaster: Boolean(admin.isMaster) };
+  if (user) return { type: AUDIT_ACTOR.SCHOOL_USER, id: user.id, name: user.name || user.email, isMaster: false };
+  return { type: AUDIT_ACTOR.SYSTEM, id: null, name: 'System', isMaster: false };
+};
+
+const log = async ({ admin, user, ip, userAgent } = {}, action, details = {}, options = {}) => {
   const { entityType, entityUuid, description, before, after, clientId } = details;
+  const actor = actorOf(admin, user);
 
   return AuditLog.create(
     {
-      actorType: admin ? AUDIT_ACTOR.ADMIN : AUDIT_ACTOR.SYSTEM,
-      actorId: admin ? admin.id : null,
-      actorName: admin ? String(admin.name || admin.email || '').slice(0, 150) : 'System',
-      actorIsMaster: admin && admin.isMaster ? YES : NO,
-      clientId: clientId || null,
+      actorType: actor.type,
+      actorId: actor.id,
+      actorName: String(actor.name || '').slice(0, 150),
+      actorIsMaster: actor.isMaster ? YES : NO,
+      clientId: clientId || (user && !admin ? user.clientId : null) || null,
       action,
       entityType: entityType || null,
       entityUuid: entityUuid || null,

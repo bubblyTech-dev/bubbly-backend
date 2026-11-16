@@ -41,6 +41,7 @@ Quick check: `GET http://localhost:3000/api/health` returns `{"status":"ok", ...
 | `npm run migration:status` | Show migration status |
 | `npm run seeder` | Run all seeders |
 | `npm run seeder:undo` | Undo all seeders |
+| `npm run seed:demo` | Development only: a demo school with logins for Principal, Teacher and Parent (printed at the end) |
 
 Generate new files with the Sequelize CLI:
 ```bash

@@ -22,6 +22,10 @@ module.exports = defineModel(
     razorpayCustomerId: DataTypes.STRING(60), // this school as a Razorpay customer
     logo: DataTypes.STRING(120), // file name only; the folder comes from config/files.js
     timezone: DataTypes.STRING(60),
+    workingDays: { type: DataTypes.STRING(20), defaultValue: '1,2,3,4,5' }, // ISO weekdays, 1 Monday ... 7 Sunday
+    opensAt: DataTypes.TIME,
+    closesAt: DataTypes.TIME,
+    academicYearStartMonth: { type: DataTypes.SMALLINT, defaultValue: 6 }, // 1 January ... 12 December
     createdBy: DataTypes.BIGINT,
     updatedBy: DataTypes.BIGINT,
   },
