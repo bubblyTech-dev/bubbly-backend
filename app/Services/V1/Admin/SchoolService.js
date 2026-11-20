@@ -5,8 +5,11 @@ const Files = require('@app/Helpers/files');
 const { paginationParams } = require('@app/Helpers/pagination');
 const { findOrFail } = require('@app/Helpers/ref');
 const { sequelize } = require('@app/Helpers/database');
-const { CLIENT_STATUS } = require('@app/Helpers/constants');
-const { Client, ClientNote, ClientStatusHistory, AdminUser } = require('@app/Models');
+const context = require('@app/Helpers/context');
+const password = require('@app/Helpers/password');
+const UserDirectory = require('@app/Services/V1/Common/UserDirectory');
+const { CLIENT_STATUS, USER_ROLE, USER_STATUS, YES } = require('@app/Helpers/constants');
+const { Client, ClientNote, ClientStatusHistory, AdminUser, User } = require('@app/Models');
 const SchoolResource = require('@app/Resources/V1/Admin/SchoolResource');
 const SchoolNoteResource = require('@app/Resources/V1/Admin/SchoolNoteResource');
 const SchoolStatusHistoryResource = require('@app/Resources/V1/Admin/SchoolStatusHistoryResource');
@@ -137,6 +140,47 @@ const list = async (query) => {
 
 const show = async (uuid) => SchoolResource.make(await findOrFail(Client, uuid));
 
+// Creates the Principal login at once with the password staff typed, so the school can sign in without waiting for the
+// first payment. The password is hashed and never audited. The Principal must change it at first login. Later,
+// Provisioning finds this Principal and creates nothing more.
+const createPrincipal = async (school, plain, ctx, transaction) => {
+  const email = UserDirectory.normalizeEmail(school.contactEmail);
+  if (!email) throw AppError.validation({ contactEmail: ['Add a contact email to create the Principal login.'] });
+  if (await UserDirectory.emailExists(email, { transaction })) {
+    throw AppError.validation({ contactEmail: ['This email is already used by another school user.'] });
+  }
+
+  const passwordHash = await password.hash(plain);
+  const user = await context.run(school.id, () =>
+    User.create(
+      {
+        email,
+        name: school.contactName,
+        phone: school.contactPhone,
+        role: USER_ROLE.PRINCIPAL,
+        status: USER_STATUS.ACTIVE,
+        mustChangePassword: YES,
+        passwordHash,
+        passwordChangedAt: new Date(),
+      },
+      { transaction },
+    ),
+  );
+
+  await Audit.log(
+    ctx,
+    'school.principal_created',
+    {
+      entityType: 'user',
+      entityUuid: user.uuid,
+      clientId: school.id,
+      description: `Created the Principal login for ${school.name} with a password set by staff`,
+      after: Audit.pick(user, ['email', 'name', 'role']),
+    },
+    { transaction },
+  );
+};
+
 const create = async (data, ctx) => {
   const values = cleanValues(data);
   values.country = values.country || DEFAULT_COUNTRY;
@@ -172,6 +216,7 @@ const create = async (data, ctx) => {
         },
         { transaction },
       );
+      if (data.principalPassword) await createPrincipal(created, data.principalPassword, ctx, transaction);
       return created;
     });
 

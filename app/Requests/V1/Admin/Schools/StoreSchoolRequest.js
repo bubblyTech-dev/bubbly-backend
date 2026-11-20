@@ -1,7 +1,8 @@
 const Request = require('@app/Requests/Request');
 
 // Add a school by hand (for example an offline sale).
-//   logo   the temp name returned by POST /admin/files/upload?type=clientLogo
+//   logo               the temp name returned by POST /admin/files/upload?type=clientLogo
+//   principalPassword  optional: creates the Principal login now (contact email + this password)
 class StoreSchoolRequest extends Request {
   rules() {
     return {
@@ -18,6 +19,7 @@ class StoreSchoolRequest extends Request {
       gstNumber: 'string|max:20',
       timezone: 'string|max:60',
       logo: 'string|max:120',
+      principalPassword: 'password',
     };
   }
 
@@ -31,6 +33,7 @@ class StoreSchoolRequest extends Request {
       addressLine2: 'address line 2',
       postalCode: 'postal code',
       gstNumber: 'GST number',
+      principalPassword: 'Principal password',
     };
   }
 }
