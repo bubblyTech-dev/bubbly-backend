@@ -13,6 +13,7 @@
     "seeder": "sequelize-cli db:seed:all",
     "seeder:undo": "sequelize-cli db:seed:undo:all",
     "seed:demo": "node database/demo.js",
+    "seed:test-school": "node database/seed-test-school.js",
     "setup": "npm run db:create && npm run migration && npm run seeder"
   },
   "type": "commonjs",
